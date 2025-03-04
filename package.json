@@ -3,6 +3,9 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"prisma": {
+		"schema": "src/lib/server/schema"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -12,9 +15,6 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"db:push": "drizzle-kit push",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
 	},
@@ -38,7 +38,6 @@
 		"@tailwindcss/vite": "^4.0.0",
 		"@vitest/browser": "^3.0.7",
 		"@vitest/coverage-v8": "^3.0.7",
-		"drizzle-kit": "^0.30.2",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^2.46.1",
@@ -64,7 +63,7 @@
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
-		"@storybook/addon-themes": "^8.6.2",
-		"drizzle-orm": "^0.40.0"
+		"@prisma/client": "^6.4.1",
+		"@storybook/addon-themes": "^8.6.2"
 	}
 }

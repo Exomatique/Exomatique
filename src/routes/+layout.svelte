@@ -22,7 +22,7 @@
 <ParaglideJS {i18n}>
 	<ParaglideJS {i18n}>
 		<Header
-			user={data.user ? { name: data?.user?.username } : undefined}
+			user={data.user ? { name: data?.user?.name } : undefined}
 			pages={routes.map((v) => {
 				return { value: v.value, text: v.text() };
 			})}
@@ -45,8 +45,10 @@
 		bind:this={logout_form}
 	></form>
 
+	{@render children()}
+
 	{#if open_login && !data.user}
-		<div class="absolute w-full">
+		<div class="absolute z-0 w-full">
 			<div class="bg-surface-800 mx-20 flex flex-col rounded-b-2xl p-2" tabindex="-1">
 				<form
 					class="flex flex-row items-center gap-5"
@@ -76,5 +78,4 @@
 			</div>
 		</div>
 	{/if}
-	{@render children()}
 </ParaglideJS>

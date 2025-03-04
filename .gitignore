@@ -29,3 +29,6 @@ vite.config.ts.timestamp-*
 src/lib/paraglide
 
 *storybook.log
+
+# Remove datasource
+src/lib/server/schema/datasource.prisma
