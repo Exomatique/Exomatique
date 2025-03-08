@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from "./$types";
 
-export const load: LayoutServerLoad = async (event): Promise<{ user?: { id: string, name: string } }> => {
+export const load: LayoutServerLoad = async (event): Promise<any> => {
+    if (event.url.pathname.startsWith('/api/')) return;
     if (!event.locals.user) {
         return {}
     }

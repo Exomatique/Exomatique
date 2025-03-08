@@ -4,5 +4,14 @@
 	"register": "S'enregistrer",
 	"logout": "Se Déconnecter",
 	"welcome": "Bienvenus ,",
-	"home": "Accueil"
+	"home": "Accueil",
+	"loginattempt_fail": "Pseudo ou mot de passe invalide",
+	"username": "Pseudo",
+	"password": "Mot de passe",
+	"rememberme": "Se souvenir de moi",
+	"password_again": "Mot de passe (encore)",
+	"register_username_rules_fail": "Pseudo invalide (min 3, max 31 caractères, seulement alphanumeric)",
+	"register_username_exist_fail": "Pseudo déjà utilisé",
+	"register_password_rules_fail": "Mot de passe invalide (min 6, max 255 caractères)",
+	"fail": "Une erreur est survenue"
 }

@@ -7,19 +7,30 @@
 	import { enhance } from '$app/forms';
 	import type { PageServerData } from './$types';
 	import type { Snippet } from 'svelte';
-	import type { ActionData } from './auth/$types';
-	let { children, data, form }: { children: Snippet<[]>; data: PageServerData; form: ActionData } =
-		$props();
+	import LoginBox from '../components/auth/LoginBox.svelte';
+	import RegisterBox from '../components/auth/RegisterBox.svelte';
+	import { post } from '$lib/utils';
+	let { children, data }: { children: Snippet<[]>; data: PageServerData } = $props();
 
 	let routes = [{ value: '', text: () => m.home() }];
 
 	let open_login = $state(false);
+	let open_register = $state(false);
 
 	let selected_route = $state('');
 	let logout_form: HTMLFormElement;
 </script>
 
-<ParaglideJS {i18n}>
+<div
+	role="none"
+	tabindex="-1"
+	onkeydown={(e) => {
+		if (e.key === 'Escape') {
+			open_login = false;
+			open_register = false;
+		}
+	}}
+>
 	<ParaglideJS {i18n}>
 		<Header
 			user={data.user ? { name: data?.user?.name } : undefined}
@@ -28,54 +39,69 @@
 			})}
 			bind:selected={selected_route}
 			onLogin={() => {
+				open_register = false;
 				open_login = true;
 			}}
-			onLogout={() => {
-				logout_form.requestSubmit();
+			onLogout={async () => {
+				await post('/auth/logout', data);
+				location.reload();
 			}}
-			onRegister={() => {}}
+			onRegister={() => {
+				open_login = false;
+				open_register = true;
+			}}
 		/>
-	</ParaglideJS>
 
-	<form
-		class="absolute h-0 w-0"
-		method="post"
-		action="/en/auth?/logout"
-		use:enhance
-		bind:this={logout_form}
-	></form>
+		<form
+			class="absolute h-0 w-0"
+			method="post"
+			action="/en/auth?/logout"
+			use:enhance
+			bind:this={logout_form}
+		></form>
 
-	{@render children()}
-
-	{#if open_login && !data.user}
-		<div class="absolute z-0 w-full">
-			<div class="bg-surface-800 mx-20 flex flex-col rounded-b-2xl p-2" tabindex="-1">
-				<form
-					class="flex flex-row items-center gap-5"
-					method="POST"
-					action={'/en/auth?/login'}
-					use:enhance
-				>
-					<label>
-						Username :
-						<input class="bg-surface-900 px-2 outline-none" name="username" />
-					</label>
-
-					<label>
-						Password :
-						<input class="bg-surface-900 px-2 outline-none" type="password" name="password" />
-					</label>
-
-					<label>
-						Remember me :
-						<input class="bg-surface-900 px-2 outline-none" type="checkbox" name="remember" />
-					</label>
-					<button class="btn bg-secondary-900">Login</button>
-					<button class="btn bg-secondary-900" formaction="/en/auth?/register">Register</button>
-				</form>
-				<p style="color: red">{form?.message ?? ''}</p>
-				<button class="absolute m-2 self-end" onclick={() => (open_login = false)}>X</button>
-			</div>
+		<div class="relative flex-1">
+			{@render children()}
 		</div>
-	{/if}
-</ParaglideJS>
+	</ParaglideJS>
+	<ParaglideJS {i18n}>
+		{#if open_login || open_register}
+			<div class="absolute top-0 flex h-full w-full items-center justify-center">
+				<div class="h-full w-full bg-black opacity-95"></div>
+				<div class="bg-surface-300 absolute top-0 right-0">
+					<button
+						class="button p-2"
+						onclick={() => {
+							open_login = false;
+							open_register = false;
+						}}>x</button
+					>
+				</div>
+
+				<div class="absolute">
+					{#if open_login}
+						<LoginBox
+							onLogin={async (data) => {
+								const isOk = (await post('/auth/login', data)).ok === 1;
+								if (isOk) location.reload();
+								return isOk;
+							}}
+						/>
+					{/if}
+
+					{#if open_register}
+						<RegisterBox
+							onRegister={async (data) => {
+								const result = await post('/auth/register', data);
+								console.log(result);
+								const isOk = result.ok === 1;
+								if (isOk) location.reload();
+								return isOk ? undefined : result.message;
+							}}
+						/>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</ParaglideJS>
+</div>

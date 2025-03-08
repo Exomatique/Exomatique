@@ -4,5 +4,14 @@
 	"register": "Register",
 	"logout": "Logout",
 	"welcome": "Welcome ,",
-	"home": "Home"
+	"home": "Home",
+	"loginattempt_fail": "Invalid username or password",
+	"username": "Username",
+	"password": "Password",
+	"rememberme": "Remember me",
+	"password_again": "Password (again)",
+	"register_username_rules_fail": "Invalid username (min 3, max 31 characters, alphanumeric only)",
+	"register_username_exist_fail": "Username is already being used",
+	"register_password_rules_fail": "Invalid password (min 6, max 255 characters)",
+	"fail": "An error has occurred"
 }
