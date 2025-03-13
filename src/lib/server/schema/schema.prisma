@@ -4,10 +4,11 @@ generator client {
 }
 
 model User {
-    id           String    @id
+    id           String     @id
     name         String
     passwordHash String
     Session      Session[]
+    Document     Document[]
 }
 
 model Session {
@@ -16,4 +17,10 @@ model Session {
     userId     String
     expiresAt  DateTime
     persistent Boolean
+}
+
+model Document {
+    id       String @id @default(uuid())
+    authorId String
+    author   User   @relation(fields: [authorId], references: [id])
 }

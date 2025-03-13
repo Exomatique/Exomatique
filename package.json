@@ -64,6 +64,8 @@
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"@prisma/client": "^6.4.1",
-		"@storybook/addon-themes": "^8.6.2"
+		"@storybook/addon-themes": "^8.6.2",
+		"@types/ssh2-sftp-client": "^9.0.4",
+		"ssh2-sftp-client": "^11.0.0"
 	}
 }
