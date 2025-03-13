@@ -13,9 +13,10 @@ export async function post(url: string, body?: any) {
 export async function get(url: string, body?: any) {
     if (!url.startsWith("/")) throw new Error("Should not use utils if using relative api link");
     url = url.substring(1)
-    return await fetch("/api/" + url, {
+
+    const params = body ? "?" + new URLSearchParams(body).toString() : "";
+    return await fetch("/api/" + url + params, {
         method: "GET",
-        body: body ? JSON.stringify(body) : undefined,
         headers: {
             'content-type': 'application/json'
         }

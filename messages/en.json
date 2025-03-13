@@ -13,5 +13,7 @@
 	"register_username_rules_fail": "Invalid username (min 3, max 31 characters, alphanumeric only)",
 	"register_username_exist_fail": "Username is already being used",
 	"register_password_rules_fail": "Invalid password (min 6, max 255 characters)",
-	"fail": "An error has occurred"
+	"fail": "An error has occurred",
+	"exercises": "Exercises",
+	"missing_required_params_fail": "Some required parameters is missing from an API request"
 }

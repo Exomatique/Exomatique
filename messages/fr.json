@@ -13,5 +13,7 @@
 	"register_username_rules_fail": "Pseudo invalide (min 3, max 31 caractères, seulement alphanumeric)",
 	"register_username_exist_fail": "Pseudo déjà utilisé",
 	"register_password_rules_fail": "Mot de passe invalide (min 6, max 255 caractères)",
-	"fail": "Une erreur est survenue"
+	"fail": "Une erreur est survenue",
+	"exercises": "Exercices",
+	"missing_required_params_fail": "Il manque un paramètre requis dans une requête API"
 }

@@ -4,24 +4,27 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
 	import Header from '../components/Header.svelte';
-	import { enhance } from '$app/forms';
 	import type { PageServerData } from './$types';
 	import type { Snippet } from 'svelte';
 	import LoginBox from '../components/auth/LoginBox.svelte';
 	import RegisterBox from '../components/auth/RegisterBox.svelte';
 	import { post } from '$lib/utils';
+	import { page } from '$app/state';
 	let { children, data }: { children: Snippet<[]>; data: PageServerData } = $props();
 
-	let routes = [{ value: '', text: () => m.home() }];
+	let routes = [
+		{ value: '', text: () => m.home() },
+		{ value: 'exercises', text: () => m.exercises() }
+	];
 
 	let open_login = $state(false);
 	let open_register = $state(false);
 
-	let selected_route = $state('');
-	let logout_form: HTMLFormElement;
+	let selected_route = $state(((page.route.id || '/').substring(1) + '/').split('/')[0]);
 </script>
 
 <div
+	class="flex h-dvh grow flex-col"
 	role="none"
 	tabindex="-1"
 	onkeydown={(e) => {
@@ -51,14 +54,6 @@
 				open_register = true;
 			}}
 		/>
-
-		<form
-			class="absolute h-0 w-0"
-			method="post"
-			action="/en/auth?/logout"
-			use:enhance
-			bind:this={logout_form}
-		></form>
 
 		<div class="relative flex-1">
 			{@render children()}
@@ -93,7 +88,6 @@
 						<RegisterBox
 							onRegister={async (data) => {
 								const result = await post('/auth/register', data);
-								console.log(result);
 								const isOk = result.ok === 1;
 								if (isOk) location.reload();
 								return isOk ? undefined : result.message;
