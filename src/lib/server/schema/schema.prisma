@@ -21,6 +21,7 @@ model Session {
 
 model Document {
     id       String @id @default(uuid())
+    title    String @default("Default Title")
     authorId String
     author   User   @relation(fields: [authorId], references: [id])
 }

@@ -31,6 +31,7 @@
 	});
 
 	let data: ExoData | undefined = $state(undefined);
+	let title: string | undefined = $state('');
 
 	let isSaving = $state(false);
 	let lastSaved = $state(new Date().getTime());
@@ -38,12 +39,16 @@
 	async function save() {
 		lastSaved = new Date().getTime();
 		isSaving = true;
-		post('/document', { document_id, url: 'index.json', data }).finally(() => (isSaving = false));
+		post('/document', { document_id, url: 'index.json', data, title }).finally(
+			() => (isSaving = false)
+		);
 	}
 
 	onMount(() => {
 		get('/document', { document_id, url: 'index.json' }).then((v) => {
 			data = v.data;
+			title = v.title;
+			console.log(title);
 		});
 	});
 </script>
@@ -52,6 +57,7 @@
 	<div class="absolute w-3/4 grow flex-row bg-white text-neutral-950 scheme-light">
 		{#if data}
 			<div class="flex w-full grow justify-end px-5 py-2">
+				<input class="mx-5 w-full px-2" maxlength="128" type="text" bind:value={title} />
 				<button class="btn bg-surface-200 hover:bg-surface-400 self-end" onclick={save}>Save</button
 				>
 			</div>
