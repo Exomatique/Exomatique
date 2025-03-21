@@ -15,7 +15,6 @@
 		onLogout: () => void;
 		onRegister: () => void;
 		pages: { text: string; value: string }[];
-		selected?: string;
 		onSelectionChange?: (newSelection: string) => void;
 	}
 
@@ -25,12 +24,12 @@
 		onLogout,
 		onRegister,
 		pages,
-		selected = $bindable(),
 		onSelectionChange = () => {}
 	}: Props = $props();
 
+	let selected = $derived(((page.route.id || '/').substring(1) + '/').split('/')[0]);
+
 	const onSectionChange = (newSelection: string) => {
-		selected = newSelection;
 		onSelectionChange(newSelection);
 	};
 

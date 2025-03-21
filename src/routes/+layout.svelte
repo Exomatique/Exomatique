@@ -19,8 +19,6 @@
 
 	let open_login = $state(false);
 	let open_register = $state(false);
-
-	let selected_route = $state(((page.route.id || '/').substring(1) + '/').split('/')[0]);
 </script>
 
 <div
@@ -40,7 +38,6 @@
 			pages={routes.map((v) => {
 				return { value: v.value, text: v.text() };
 			})}
-			bind:selected={selected_route}
 			onLogin={() => {
 				open_register = false;
 				open_login = true;
