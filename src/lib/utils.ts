@@ -1,3 +1,6 @@
+import { browser } from "$app/environment";
+import * as m from '$lib/paraglide/messages.js';
+
 export async function post(url: string, body?: any) {
     if (!url.startsWith("/")) throw new Error("Should not use utils if using relative api link");
     url = url.substring(1)
@@ -21,4 +24,11 @@ export async function get(url: string, body?: any) {
             'content-type': 'application/json'
         }
     }).then(async v => await v.json())
+}
+
+export async function lang(id: string, lang?: string) {
+    const value = (m as any)[id];
+    if (value) return value() as string
+    else if (!value && browser) return await get("/lang", { id }).then(v => v.message as string);
+    else return undefined
 }

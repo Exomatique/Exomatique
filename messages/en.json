@@ -15,5 +15,14 @@
 	"register_password_rules_fail": "Invalid password (min 6, max 255 characters)",
 	"fail": "An error has occurred",
 	"exercises": "Exercises",
-	"missing_required_params_fail": "Some required parameters is missing from an API request"
+	"visibility": "Visibility",
+	"tags": "Tags",
+	"missing_required_params_fail": "Some required parameters is missing from an API request",
+	"exercises_settings": "Exercises Settings",
+	"public_visibility": "Public",
+	"protected_visibility": "Protected",
+	"private_visibility": "Private",
+	"public_description": "Exercise will be viewable by everyone",
+	"protected_description": "Exercise will not be viewable, but will still be accessible using link",
+	"private_description": "Exercise will not be accessible"
 }

@@ -19,9 +19,43 @@ model Session {
     persistent Boolean
 }
 
+model EditableLang {
+    id            String
+    lang          String
+    value         String
+    ExerciseTag   ExerciseTag? @relation(fields: [exerciseTagId], references: [id])
+    exerciseTagId String?
+
+    @@id([id, lang])
+}
+
 model Document {
-    id       String @id @default(uuid())
-    title    String @default("Default Title")
-    authorId String
-    author   User   @relation(fields: [authorId], references: [id])
+    id         String    @id @default(uuid())
+    title      String    @default("Default Title")
+    authorId   String
+    author     User      @relation(fields: [authorId], references: [id])
+    Exercise   Exercise?
+    visibility Int       @default(-1)
+}
+
+model Exercise {
+    id                    String                  @id
+    document              Document                @relation(fields: [id], references: [id])
+    ExerciseTagOnExercise ExerciseTagOnExercise[]
+}
+
+model ExerciseTag {
+    id                    String                  @id
+    lang                  EditableLang[]
+    ExerciseTagOnExercise ExerciseTagOnExercise[]
+}
+
+model ExerciseTagOnExercise {
+    id Int @id @default(autoincrement())
+
+    exercise   Exercise @relation(fields: [exerciseId], references: [id])
+    exerciseId String
+
+    tag           ExerciseTag @relation(fields: [ExerciseTagId], references: [id])
+    ExerciseTagId String
 }

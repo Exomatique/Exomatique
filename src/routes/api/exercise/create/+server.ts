@@ -20,6 +20,7 @@ export const POST: RequestHandler = async (event) => {
     }
 
     const document = await create(user.id);
+    await prisma.exercise.create({ data: { id: document.id } })
 
     return json({ ok: 1, document });
 }

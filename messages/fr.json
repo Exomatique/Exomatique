@@ -15,5 +15,14 @@
 	"register_password_rules_fail": "Mot de passe invalide (min 6, max 255 caractères)",
 	"fail": "Une erreur est survenue",
 	"exercises": "Exercices",
-	"missing_required_params_fail": "Il manque un paramètre requis dans une requête API"
+	"missing_required_params_fail": "Il manque un paramètre requis dans une requête API",
+	"exercises_settings": "Paramètre de l'Exercice",
+	"visibility": "Visibilité",
+	"tags": "Etiquettes",
+	"public_visibility": "Publique",
+	"protected_visibility": "Protégé",
+	"private_visibility": "Privé",
+	"public_description": "L'exercice sera visible par tout le monde",
+	"protected_description": "L'exercice ne sera pas visible, mais restera accessible via le lien",
+	"private_description": "L'exercice sera ni visible, ni accessible"
 }

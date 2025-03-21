@@ -25,10 +25,18 @@ export const GET: RequestHandler = async (event) => {
     if (!document_id || !url) {
         error(400, { message: 'missing_required_params_fail' })
     }
-    const title = (await prisma.document.findFirst({ where: { id: document_id } }))?.title;
+
+    const exercise = await prisma.exercise.findFirst({ where: { id: document_id }, include: { document: true, ExerciseTagOnExercise: { include: { tag: true } } } })
+
+    if (!exercise) {
+        error(400, { message: 'document_exist_fail' })
+    }
+
+
+    const title = exercise.document.title;
     const data = JSON.parse(await read(document_id, url) || "[]");
 
-    return json({ ok: 1, title, data });
+    return json({ ok: 1, title, data, tags: exercise.ExerciseTagOnExercise.map(v => v.tag.id), visibility: exercise.document.visibility });
 }
 
 export const POST: RequestHandler = async (event) => {
@@ -45,10 +53,17 @@ export const POST: RequestHandler = async (event) => {
         error(400, { message: 'account_needed_fail' });
     }
 
-    const { document_id, url, data, title, visibility } = await event.request.json();
+    const { document_id, url, data, title, tags, visibility } = await event.request.json();
 
     await write(document_id, url, JSON.stringify(data));
     await prisma.document.update({ where: { id: document_id }, data: { title, visibility } })
+
+
+    await prisma.exerciseTagOnExercise.deleteMany({ where: { exerciseId: document_id } })
+    for await (const tag of tags) {
+        await prisma.exerciseTagOnExercise.create({ data: { exerciseId: document_id, ExerciseTagId: tag } })
+    }
+
 
     return json({ ok: 1, data });
 }

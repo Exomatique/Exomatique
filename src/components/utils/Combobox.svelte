@@ -15,7 +15,7 @@
 		/** Bindable value property*/
 		value: string[];
 		/** Mutliple */
-		multiple: boolean;
+		multiple?: boolean;
 
 		// Base ---
 		/** Set base classes for the root element. */
@@ -186,7 +186,6 @@
 	}));
 	const api = $derived(combobox.connect(service, normalizeProps));
 	const triggerProps = $derived(mergeProps(api.getTriggerProps(), { onclick }));
-	$inspect(value);
 </script>
 
 <span {...api.getRootProps()} class="{base} {width} {classes}" data-testid="combobox">
