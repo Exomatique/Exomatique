@@ -50,6 +50,7 @@
 		chipContainerBase?: string;
 		/** Set base classes for chips*/
 		chipBase?: string;
+		chipPosition?: 'below' | 'right';
 
 		// Positioner ---
 		/** Set base classes for the positioner. */
@@ -116,7 +117,8 @@
 		inputGroupClasses = '',
 		// Chips
 		chipContainerBase = 'chip-container',
-		chipBase = 'chip preset-filled',
+		chipBase = 'chip preset-filled py-2',
+		chipPosition = 'below',
 		// Positioner
 		positionerBase = '',
 		positionerClasses = '',
@@ -190,7 +192,12 @@
 
 <span {...api.getRootProps()} class="{base} {width} {classes}" data-testid="combobox">
 	<!-- Label -->
-	<label {...api.getLabelProps()} class="{labelBase} {labelClasses}">
+	<label
+		{...api.getLabelProps()}
+		class="{labelBase} {labelClasses} {chipPosition == 'right'
+			? 'flex flex-row items-center gap-2'
+			: ''}"
+	>
 		{#if label}<span class={labelText}>{label}</span>{/if}
 		<!-- Input Group -->
 		<div {...api.getControlProps()} class="{inputGroupBase} {inputGroupClasses}">
@@ -223,7 +230,9 @@
 		<!-- Chips -->
 		{#if multiple}
 			<div class={chipContainerBase}>
-				{#each data.filter((v) => value.includes(v.value)) as { label, value: v }}
+				{#each data
+					.filter((v) => value.includes(v.value))
+					.toSorted((x, v) => x.value.localeCompare(v.value)) as { label, value: v }}
 					<button
 						type="button"
 						class={chipBase}
@@ -278,11 +287,45 @@
 
 	.ig-input {
 		outline: none;
+		background-color: transparent;
+		border-radius: var(--radius-base) /* 0.25rem = 4px */;
+		display: block;
+		font-size: var(--text-base)
+			/* calc(1rem * var(--text-scaling)) = calc(16px * var(--text-scaling)) */;
+		line-height: var(--text-base--line-height) /* calc(calc(1.5 / 1) ≈ 1.5 * var(--text-scaling)) */;
+		padding-block: calc(var(--spacing) * 1) /* 0.25rem = 4px */;
+		padding-inline: calc(var(--spacing) * 3) /* 0.75rem = 12px */;
+		outline-color: transparent;
+		border-width: 0;
+		--tw-ring-inset: inset;
+		--tw-ring-color: var(--color-surface-200-800)
+			/* light-dark(var(--color-surface-200), var(--color-surface-800)) */;
+		--tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 var(--default-ring-width) /* 1px */
+			var(--tw-ring-color, currentColor);
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
+			var(--tw-ring-shadow), var(--tw-shadow);
+		&:active {
+			--tw-ring-color: var(--color-primary-500) /* oklch(55.6% 0 0deg) = #737373 */;
+		}
+		&:focus {
+			--tw-ring-color: var(--color-primary-500) /* oklch(55.6% 0 0deg) = #737373 */;
+		}
+		&:focus-within {
+			--tw-ring-color: var(--color-primary-500) /* oklch(55.6% 0 0deg) = #737373 */;
+		}
+		&::placeholder {
+			color: var(--color-surface-700-300)
+				/* light-dark(var(--color-surface-700), var(--color-surface-300)) */;
+		}
 	}
 
 	.chip-container {
+		width: var(--container-2xl);
 		display: flex;
 		flex-direction: row;
+		margin-top: 0;
+		overflow: scroll;
 		gap: 5px;
 	}
 </style>

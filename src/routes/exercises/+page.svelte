@@ -53,44 +53,46 @@
 </script>
 
 <div class="relative flex flex-col gap-5 p-5">
-	<button
-		disabled={isCreating}
-		onclick={onNewDocument}
-		class="btn bg-surface-700 self-start rounded-2xl p-5"
-	>
-		{m.new_exercise()}
-		<FileText />
-	</button>
+	<div class="relative flex flex-row items-center gap-5">
+		<div
+			class="bg-surface-900 z-10 flex flex-1 flex-row items-center gap-5 rounded-2xl p-5 text-lg"
+		>
+			<input
+				class="ig-input input max-w-md shrink grow-0 outline-none"
+				placeholder={m.title()}
+				type="text"
+				bind:value={filterInput}
+			/>
 
-	<div class="flex flex-1 flex-row gap-5">
-		<div class="bg-surface-400 relative flex h-full flex-1 flex-col gap-5 rounded-2xl p-5">
-			<h4 class="h4 mb-2">{m.search()}</h4>
-
-			<div class="flex flex-nowrap items-center gap-5">
-				<h5 class="h5">{m.title()}</h5>
-				<input class="input" type="text" bind:value={filterInput} />
-			</div>
-
-			<div class="flex flex-nowrap items-center gap-5">
-				<h5 class="h5 self-start">{m.tags()}</h5>
-				<Combobox data={tagsData} multiple bind:value={filterTags} placeholder="Select..."
-					>{#snippet item(item)}
-						<div class="flex w-full justify-between space-x-2">
-							<span>{item.label}</span>
-						</div>
-					{/snippet}
-				</Combobox>
-			</div>
-
-			<button
-				class="btn absolute right-5 bottom-5"
-				onclick={() => onSearch()}
-				disabled={isSearching}
-			>
+			<button class="btn bg-surface-800" onclick={() => onSearch()} disabled={isSearching}>
 				<Search />
 			</button>
+
+			<Combobox
+				data={tagsData}
+				multiple
+				chipPosition="right"
+				bind:value={filterTags}
+				placeholder={m.tags()}
+				>{#snippet item(item)}
+					<div class="flex w-full justify-between space-x-2">
+						<span>{item.label}</span>
+					</div>
+				{/snippet}
+			</Combobox>
 		</div>
 
+		<button
+			disabled={isCreating}
+			onclick={onNewDocument}
+			class="btn bg-surface-700 self-start rounded-2xl p-7"
+		>
+			{m.new_exercise()}
+			<FileText />
+		</button>
+	</div>
+
+	<div class="flex flex-1 flex-row gap-5">
 		{#if isSearching || !exercises}
 			<div
 				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-row items-center justify-center gap-5 rounded-2xl p-5"
