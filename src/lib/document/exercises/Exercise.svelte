@@ -1,14 +1,5 @@
 <script lang="ts">
 	import type { ExoData } from '@exomatique/editor';
-	import {
-		DefinitionModule,
-		Editor,
-		ExoEditor,
-		LatexModule,
-		MdModule,
-		TheoremModule,
-		VideoModule
-	} from '@exomatique/editor';
 	import Loading from '../../../components/Loading.svelte';
 	import { onMount } from 'svelte';
 	import { get, post } from '$lib/utils';
@@ -33,17 +24,6 @@
 		onFetchFail?: () => void;
 	} = $props();
 
-	const exo_editor = new ExoEditor({
-		modules: [
-			new MdModule(),
-			new DefinitionModule(),
-			new TheoremModule(),
-			new LatexModule(),
-			new VideoModule()
-		],
-		default_module: 'md'
-	});
-
 	let params_open = $state(false);
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
@@ -65,9 +45,12 @@
 		}).finally(() => (isSaving = false));
 	}
 
+	let exercise = $state(undefined as ExerciseMeta | undefined);
+
 	onMount(() => {
 		get('/exercise', { document_id, url: 'index.json' })
 			.then((v) => {
+				exercise = v;
 				data = v.data;
 				title = v.title;
 				tags = v.tags;
@@ -83,6 +66,8 @@
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
 	import { goto } from '$app/navigation';
+	import Editor from '../Editor.svelte';
+	import { href, type ExerciseMeta } from './types';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
@@ -103,10 +88,15 @@
 		{#if data}
 			<div class="flex w-full grow justify-end px-5 py-2">
 				<input class="mx-5 w-full px-2" maxlength="128" type="text" bind:value={title} />
+				{#if exercise}
+					<a class="btn bg-surface-200 hover:bg-surface-400 mr-5 self-end" href={href(exercise)}
+						>View</a
+					>
+				{/if}
 				<button class="btn bg-surface-200 hover:bg-surface-400 self-end" onclick={save}>Save</button
 				>
 			</div>
-			<Editor {exo_editor} bind:data />
+			<Editor editable bind:data />
 		{:else}
 			<div class=" pr-2 pb-2">
 				<div class="flex w-full grow justify-center shadow-2xl">

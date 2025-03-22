@@ -9,8 +9,10 @@
 	import LoginBox from '../components/auth/LoginBox.svelte';
 	import RegisterBox from '../components/auth/RegisterBox.svelte';
 	import { post } from '$lib/utils';
-	import { page } from '$app/state';
+	import { user } from '../store';
 	let { children, data }: { children: Snippet<[]>; data: PageServerData } = $props();
+
+	if (data?.user) user.set({ id: data.user.id, name: data.user.name });
 
 	let routes = [
 		{ value: '', text: () => m.home() },

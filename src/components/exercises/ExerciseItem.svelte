@@ -38,9 +38,13 @@
 
 	<div class="flex flex-col">
 		{#if edit}
-			<button class="btn bg-surface-700 border-surface-500 self-start border-1">
+			<a
+				class="btn bg-surface-700 border-surface-500 self-start border-1"
+				href={href(exercise, edit)}
+				target="_blank"
+			>
 				<Pen />
-			</button>
+			</a>
 		{/if}
 
 		<div class="flex-1"></div>

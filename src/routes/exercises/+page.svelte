@@ -8,6 +8,7 @@
 	import ExerciseBadge from '../../components/exercises/ExerciseItem.svelte';
 	import type { ExerciseMeta } from '$lib/document/exercises';
 	import Loading from '../../components/Loading.svelte';
+	import { user } from '../../store';
 
 	interface ComboboxData {
 		label: string;
@@ -105,7 +106,7 @@
 			>
 				{#if exercises.length > 0}
 					{#each exercises as exo}
-						<ExerciseBadge {...exo} />
+						<ExerciseBadge edit={$user && exo.authorId === $user.id} {...exo} />
 					{/each}
 				{:else}
 					<h2 class="h5">{m.no_exercises_fail()}</h2>
