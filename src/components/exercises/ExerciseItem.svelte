@@ -45,7 +45,11 @@
 
 		<div class="flex-1"></div>
 
-		<a class="btn bg-surface-700 border-surface-500 self-end border-1" href={href(exercise)}>
+		<a
+			class="btn bg-surface-700 border-surface-500 self-end border-1"
+			href={href(exercise)}
+			target="_blank"
+		>
 			<Eye />
 		</a>
 	</div>
