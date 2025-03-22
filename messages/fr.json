@@ -34,5 +34,10 @@
 	"exercise_confirm_delete_text_1": "Pour confirmer la suppression, veuillez écrire ci-dessous le titre de l'exercice",
 	"exercise_confirm_fail": "Le titre de l'exercice est {title}",
 	"document_exist_fail": "Ce document n'existe pas",
-	"document_confirm_permission_fail": "Vous ne pouvez pas supprimer ce document"
+	"document_confirm_permission_fail": "Vous ne pouvez pas supprimer ce document",
+	"exercise_error_message": "Nous sommes vraiment désolé mais nous n'avons pas été capable de charger cet exercice.",
+	"exercise_error_common_issues": "Les raisons les plus courantes sont :",
+	"exercise_error_issue_0": "L'exercice a été supprimé",
+	"exercise_error_issue_1": "Vous n'y avez pas accès (essayez de vous connecter)",
+	"exercise_error_issue_2": "Il n'existe simplement pas"
 }

@@ -26,9 +26,11 @@
 	let tags = $state([]);
 
 	let {
-		document_id
+		document_id,
+		onFetchFail = () => {}
 	}: {
 		document_id: string;
+		onFetchFail?: () => void;
 	} = $props();
 
 	const exo_editor = new ExoEditor({
@@ -71,7 +73,7 @@
 				tags = v.tags;
 				visibility = String(v.visibility);
 			})
-			.catch(console.error);
+			.catch(onFetchFail);
 
 		get('/tags').then((v) => {
 			tagsData = v.data as ComboboxData[];

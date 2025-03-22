@@ -34,5 +34,10 @@
 	"exercise_confirm_delete_text_1": "To confirm exercise deletion, please write exercise title below :",
 	"exercise_confirm_fail": "Exercise title is {title}",
 	"document_exist_fail": "This document does not exist",
-	"document_confirm_permission_fail": "You cannot delete this document"
+	"document_confirm_permission_fail": "You cannot delete this document",
+	"exercise_error_message": "We're very sorry but we were not able to load this exercise.",
+	"exercise_error_common_issues": "Common issues are :",
+	"exercise_error_issue_0": "This exercise was deleted",
+	"exercise_error_issue_1": "You do not have access to it (try logging in)",
+	"exercise_error_issue_2": "It simply does not exists"
 }
