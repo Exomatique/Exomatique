@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ExoData, IExoModuleData } from '@exomatique/editor';
+	import type { ExoData } from '@exomatique/editor';
 	import {
 		DefinitionModule,
 		Editor,
@@ -22,8 +22,6 @@
 	});
 
 	let data: ExoData = $state([]);
-
-	// $inspect(data);
 </script>
 
 <div class="relative flex h-full flex-1 justify-center">

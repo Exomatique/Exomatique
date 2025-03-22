@@ -24,5 +24,8 @@
 	"private_visibility": "Private",
 	"public_description": "Exercise will be viewable by everyone",
 	"protected_description": "Exercise will not be viewable, but will still be accessible using link",
-	"private_description": "Exercise will not be accessible"
+	"private_description": "Exercise will not be accessible",
+	"new_exercise": "Create a new exercise",
+	"search": "Search",
+	"title": "Title"
 }
