@@ -1,13 +1,16 @@
 <script lang="ts">
+	import type { ClassValue } from 'svelte/elements';
+
 	const RADIUS = 0.35;
 	const SPACING = 0.1;
 
 	interface Props {
 		size?: 'extra-small' | 'small' | 'medium' | 'large' | 'extra-large' | number;
+		classValue?: ClassValue;
 		color?: string | 'gradient';
 	}
 
-	const { size = 'small', color = 'gradient' }: Props = $props();
+	const { classValue = '', size = 'small', color = 'gradient' }: Props = $props();
 
 	const mapper = {
 		'extra-small': 4,
@@ -24,7 +27,7 @@
 	aria-hidden="true"
 	width={`calc(var(--spacing) * ${real_size})`}
 	height={`calc(var(--spacing) * ${real_size})`}
-	class="inline fill-blue-600 text-gray-200 dark:text-gray-600"
+	class={'inline fill-blue-600 text-gray-200 dark:text-gray-600 ' + classValue}
 	viewBox="0 0 100 100"
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"

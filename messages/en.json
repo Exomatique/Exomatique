@@ -27,5 +27,6 @@
 	"private_description": "Exercise will not be accessible",
 	"new_exercise": "Create a new exercise",
 	"search": "Search",
-	"title": "Title"
+	"title": "Title",
+	"no_exercises_fail": "Sorry, we could not find exercises given the current request"
 }

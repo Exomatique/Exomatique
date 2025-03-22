@@ -9,7 +9,6 @@ export const GET: RequestHandler = async (event) => {
 	const id = event.url.searchParams.get('id');
 	const lang = event.cookies.get('paraglide_lang') || 'en';
 
-	console.log('H');
 	if (!id) {
 		error(400, { message: 'missing_required_params_fail' });
 	}

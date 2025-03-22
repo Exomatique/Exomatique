@@ -7,6 +7,7 @@
 	import Combobox from '../../components/utils/Combobox.svelte';
 	import ExerciseBadge from '../../components/exercises/ExerciseItem.svelte';
 	import type { ExerciseMeta } from '$lib/document/exercises';
+	import Loading from '../../components/Loading.svelte';
 
 	interface ComboboxData {
 		label: string;
@@ -15,7 +16,7 @@
 
 	let exercises: ExerciseMeta[] | undefined = $state(undefined);
 	let isCreating = $state(false);
-	let isSearching = $state(false);
+	let isSearching = $state(true);
 
 	async function onNewDocument() {
 		isCreating = true;
@@ -25,8 +26,8 @@
 		goto('/exercises/d/' + id);
 	}
 
-	async function onSearch() {
-		if (isSearching) return;
+	async function onSearch(force?: true) {
+		if (isSearching && !force) return;
 		exercises = undefined;
 		isSearching = true;
 
@@ -46,6 +47,8 @@
 		get('/tags').then((v) => {
 			tagsData = v.data as ComboboxData[];
 		});
+
+		onSearch(true);
 	});
 </script>
 
@@ -79,17 +82,33 @@
 				</Combobox>
 			</div>
 
-			<button class="btn absolute right-5 bottom-5" onclick={onSearch} disabled={isSearching}>
+			<button
+				class="btn absolute right-5 bottom-5"
+				onclick={() => onSearch()}
+				disabled={isSearching}
+			>
 				<Search />
 			</button>
 		</div>
 
-		<div class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-col gap-5 rounded-2xl p-5">
-			{#if exercises}
-				{#each exercises as exo}
-					<ExerciseBadge {...exo} />
-				{/each}
-			{/if}
-		</div>
+		{#if isSearching || !exercises}
+			<div
+				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-row items-center justify-center gap-5 rounded-2xl p-5"
+			>
+				<Loading size={'extra-large'} />
+			</div>
+		{:else}
+			<div
+				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-col items-center gap-5 rounded-2xl p-5"
+			>
+				{#if exercises.length > 0}
+					{#each exercises as exo}
+						<ExerciseBadge {...exo} />
+					{/each}
+				{:else}
+					<h2 class="h5">{m.no_exercises_fail()}</h2>
+				{/if}
+			</div>
+		{/if}
 	</div>
 </div>

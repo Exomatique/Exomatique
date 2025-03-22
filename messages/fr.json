@@ -27,5 +27,6 @@
 	"private_description": "L'exercice sera ni visible, ni accessible",
 	"new_exercise": "Créer un nouvel exercice",
 	"search": "Recherche",
-	"title": "Titre"
+	"title": "Titre",
+	"no_exercises_fail": "Veuillez nous excuser, nous n'avons pas pu trouver d'exercises correspondant à cette requête"
 }
