@@ -14,6 +14,7 @@
 	import { get, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
 	import Combobox from '../../../components/utils/Combobox.svelte';
+	import { Trash } from '@lucide/svelte';
 
 	interface ComboboxData {
 		label: string;
@@ -76,6 +77,23 @@
 			tagsData = v.data as ComboboxData[];
 		});
 	});
+
+	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import IconX from '@lucide/svelte/icons/x';
+	import { goto } from '$app/navigation';
+
+	let deletePopoverState = $state(false);
+	let deletionConfirmText = $state('');
+
+	function deletePopoverClose() {
+		deletionConfirmText = '';
+		deletePopoverState = false;
+	}
+
+	async function deleteExercise() {
+		if (deletionConfirmText !== title) return;
+		await post('/document/delete', { document_id }).finally(() => goto('/exercises'));
+	}
 </script>
 
 <div class="relative flex h-full flex-1 justify-center">
@@ -130,9 +148,13 @@
 						</div>
 					{/snippet}</Combobox
 				>
-
-				<div></div>
 			</label>
+			<button
+				class="btn absolute right-5 bottom-5 border-2 border-red-400 shadow-sm shadow-red-400"
+				onclick={() => (deletePopoverState = true)}
+			>
+				<Trash color="red" />
+			</button>
 		</div>
 		<div class="absolute right-2.5 flex h-full w-3 flex-col justify-center">
 			<button aria-label="Show Params" onclick={() => (params_open = !params_open)}>
@@ -151,6 +173,58 @@
 		</div>
 	{/if}
 </div>
+
+{#if deletePopoverState}
+	<div
+		class="bg-surface-950 absolute top-0 left-0 flex h-full w-full flex-1 items-center justify-center opacity-90"
+	>
+		<Popover
+			open={deletePopoverState}
+			modal
+			onOpenChange={(e) => (deletePopoverState = e.open)}
+			positioning={{ placement: 'top' }}
+			contentBase="card bg-surface-200-800 border-2 border-red-400 p-4 space-y-4"
+			arrow
+			arrowBackground=""
+		>
+			{#snippet trigger()}{/snippet}
+			{#snippet content()}
+				<header class="flex justify-between">
+					<p class="text-xl font-bold">{m.exercise_confirm_delete()}</p>
+					<button class="btn-icon hover:preset-tonal" onclick={deletePopoverClose}><IconX /></button
+					>
+				</header>
+				<article>
+					<p class="text-red-400">
+						{m.exercise_confirm_delete_text_0()}
+					</p>
+					<p>
+						{m.exercise_confirm_delete_text_1()}
+					</p>
+
+					<div class="mt-2 flex flex-row items-center gap-5">
+						<input
+							class="input bg-surface-950 text-red-500 outline-none selection:outline-none placeholder:text-red-400 placeholder:opacity-50"
+							placeholder={title}
+							bind:value={deletionConfirmText}
+						/>
+
+						<button
+							class="btn m-2 border-2 border-red-600"
+							disabled={deletionConfirmText !== title}
+							onclick={deleteExercise}
+						>
+							<Trash color="red" />
+						</button>
+					</div>
+					<p class={`${deletionConfirmText === title ? 'invisible' : ''} opacity-70`}>
+						{m.exercise_confirm_fail({ title: title || '' })}
+					</p>
+				</article>
+			{/snippet}
+		</Popover>
+	</div>
+{/if}
 
 <style>
 	:global(.ig-input) {

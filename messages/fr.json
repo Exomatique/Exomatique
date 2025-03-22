@@ -28,5 +28,11 @@
 	"new_exercise": "Créer un nouvel exercice",
 	"search": "Recherche",
 	"title": "Titre",
-	"no_exercises_fail": "Veuillez nous excuser, nous n'avons pas pu trouver d'exercises correspondant à cette requête"
+	"no_exercises_fail": "Veuillez nous excuser, nous n'avons pas pu trouver d'exercises correspondant à cette requête",
+	"exercise_confirm_delete": "Confirmer la suppression de l'exercise",
+	"exercise_confirm_delete_text_0": "Soyez avertis qu'aucune donnée ne pourra être récupéré après délétion.",
+	"exercise_confirm_delete_text_1": "Pour confirmer la suppression, veuillez écrire ci-dessous le titre de l'exercice",
+	"exercise_confirm_fail": "Le titre de l'exercice est {title}",
+	"document_exist_fail": "Ce document n'existe pas",
+	"document_confirm_permission_fail": "Vous ne pouvez pas supprimer ce document"
 }

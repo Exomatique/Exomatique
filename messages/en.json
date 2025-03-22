@@ -28,5 +28,11 @@
 	"new_exercise": "Create a new exercise",
 	"search": "Search",
 	"title": "Title",
-	"no_exercises_fail": "Sorry, we could not find exercises given the current request"
+	"no_exercises_fail": "Sorry, we could not find exercises given the current request",
+	"exercise_confirm_delete": "Confirm Exercise Deletion",
+	"exercise_confirm_delete_text_0": "Be aware that no data will be retrievable after deletion.",
+	"exercise_confirm_delete_text_1": "To confirm exercise deletion, please write exercise title below :",
+	"exercise_confirm_fail": "Exercise title is {title}",
+	"document_exist_fail": "This document does not exist",
+	"document_confirm_permission_fail": "You cannot delete this document"
 }
