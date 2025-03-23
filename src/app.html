@@ -1,16 +1,24 @@
 <!doctype html>
 <html lang="%paraglide.lang%" dir="%paraglide.textDirection%" data-theme="cerberus">
+	<head>
+		<meta charset="utf-8" />
+		<title>Exomatique</title>
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-	<meta charset="utf-8" />
-	<title>Exomatique</title>
-	<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	%sveltekit.head%
-</head>
+		<!-- For discord use of embed -->
+		<meta content="Exomatique" property="og:title" />
+		<meta
+			content="(Site encore en construction) Partagez des exercises, des cours. Discutez avec les autres utilisateurs d'informatique, le tout dans une ambiance calme et apaisé."
+			property="og:description"
+		/>
+		<meta content="https://exomatique.fr" property="og:url" />
+		<meta content="https://exomatique.fr/favicon.png" property="og:image" />
+		<meta content="#8939F3" data-react-helmet="true" name="theme-color" />
+		%sveltekit.head%
+	</head>
 
-<body data-sveltekit-preload-data="hover" class="flex-1">
-	<div class="flex-1 relative" style="display: contents">%sveltekit.body%</div>
-</body>
-
+	<body data-sveltekit-preload-data="hover" class="flex-1">
+		<div class="relative flex-1" style="display: contents">%sveltekit.body%</div>
+	</body>
 </html>
