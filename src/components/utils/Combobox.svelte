@@ -1,295 +1,147 @@
-<script lang="ts" generics="T extends ComboboxItem">
-	import { fade } from 'svelte/transition';
-	import * as combobox from '@zag-js/combobox';
-	import { useMachine, normalizeProps, mergeProps } from '@zag-js/svelte';
-	import type { Snippet } from 'svelte';
+<script lang="ts">
+	import { Check, ChevronDown, X } from '@lucide/svelte';
+	import { onMount } from 'svelte';
 
-	export interface ComboboxProps<T extends ComboboxItem>
-		extends Omit<combobox.Props, 'id' | 'collection'> {
-		/** Provide the list of label and value data */
-		data?: T[];
-		/** Set the label to display. */
-		label?: string;
-		/** Set z-index for the positioner. */
-		zIndex?: string;
-		/** Bindable value property*/
+	interface Props {
+		data: { value: string; label: string }[];
 		value: string[];
-		/** Mutliple */
-		multiple?: boolean;
-
-		// Base ---
-		/** Set base classes for the root element. */
-		base?: string;
-		/** Set width classes for the root element. */
-		width?: string;
-		/** Provide arbitrary classes for the root element. */
-		classes?: string;
-
-		// Label ---
-		/** Set base classes for the label. */
-		labelBase?: string;
-		/** Set text and font classes for the label. */
-		labelText?: string;
-		/** Provide arbitrary classes for the label. */
-		labelClasses?: string;
-
-		// Input Group ---
-		/** Set base classes for the input group. */
-		inputGroupBase?: string;
-		/** Set input classes for the input group. */
-		inputGroupInput?: string;
-		/** Set button classes for the input group. */
-		inputGroupButton?: string;
-		/** Set arrow classes for the input group. */
-		inputGroupArrow?: string;
-		/** Provide arbitrary classes for the input group. */
-		inputGroupClasses?: string;
-
-		// Multiple Chips ---
-		/** Set base classes for the chip container*/
-		chipContainerBase?: string;
-		/** Set base classes for chips*/
-		chipBase?: string;
-		chipPosition?: 'below' | 'right';
-
-		// Positioner ---
-		/** Set base classes for the positioner. */
-		positionerBase?: string;
-		/** Provide arbitrary classes for the positioner. */
-		positionerClasses?: string;
-
-		// Content ---
-		/** Set base classes for the content. */
-		contentBase?: string;
-		/** Set background classes for the content. */
-		contentBackground?: string;
-		/** Set space-y classes for the content. */
-		contentSpaceY?: string;
-		/** Provide arbitrary classes for the content. */
-		contentClasses?: string;
-
-		// Option ---
-		/** Set base classes for the option. */
-		optionBase?: string;
-		/** Set focus classes for the option. */
-		optionFocus?: string;
-		/** Set hover classes for the option. */
-		optionHover?: string;
-		/** Set active classes for the option. */
-		optionActive?: string;
-		/** Provide arbitrary classes for the option. */
-		optionClasses?: string;
-
-		// Snippets ---
-		/** Provide a custom arrow icon. */
-		arrow?: Snippet;
-		/** Provide a custom template for the option. */
-		item?: Snippet<[T]>;
-
-		// Events ---
-		/** Handle the combobox dropdown button click event. */
-		onclick?: (event: Event) => void;
-	}
-
-	export interface ComboboxItem {
-		label: string;
-		value: string;
+		multiple: boolean;
+		chipContainer?: HTMLElement;
 	}
 
 	let {
-		data = [],
-		multiple = false,
-		label = '',
-		zIndex = 'auto',
-		// Base
-		base = '',
-		width = '',
-		classes = '',
-		// Label
-		labelBase = 'label',
-		labelText = 'label-text',
-		labelClasses = '',
-		// Input
-		inputGroupBase = 'input-group grid-cols-[1fr_auto]',
-		inputGroupInput = 'ig-input',
-		inputGroupButton = 'ig-btn hover:preset-tonal',
-		inputGroupArrow = '',
-		inputGroupClasses = '',
-		// Chips
-		chipContainerBase = 'chip-container',
-		chipBase = 'chip preset-filled py-2',
-		chipPosition = 'below',
-		// Positioner
-		positionerBase = '',
-		positionerClasses = '',
-		// Content
-		contentBase = 'card p-2',
-		contentBackground = 'preset-outlined-surface-200-800 bg-surface-50-950',
-		contentSpaceY = 'space-y-1',
-		contentClasses = '',
-		// Option
-		optionBase = 'btn justify-start w-full',
-		optionHover = 'hover:preset-tonal',
-		optionActive = 'preset-filled-primary-500',
-		optionClasses = '',
-		// Snippets
-		arrow,
-		item,
-		// Events
-		onclick,
+		data,
+		chipContainer = $bindable(),
 		value = $bindable([]),
-		// Zag ---
-		...zagProps
-	}: ComboboxProps<T> = $props();
+		multiple = false
+	}: Props = $props();
 
-	// Zag
-	let options = $state.raw(data);
-	const collection = $derived(
-		combobox.collection({
-			items: data,
-			// Map data structure
-			itemToValue: (item) => item.value,
-			itemToString: (item) => item.label,
-			isItemDisabled: (item) => false
-		})
+	let element: HTMLElement;
+	let thisChipContainer: HTMLElement | undefined = $state(undefined);
+	let filter = $state(
+		multiple ? '' : value.length === 0 ? '' : data.find((v) => v.value === value[0])?.label || ''
 	);
+	let ignore_filter = $state(false);
+	let open = $state(false);
 
-	// Manage multiple
-	let input = $state('');
-
-	const id = $props.id();
-	const service = useMachine(combobox.machine, () => ({
-		id: id,
-		collection: collection,
-		closeOnSelect: !multiple,
-		...zagProps,
-		onOpenChange(event) {
-			options = multiple ? data.filter((item) => !value.includes(item.value)) : data;
-			zagProps.onOpenChange?.(event);
-		},
-		onValueChange(event) {
-			if (multiple) {
-				value = value.concat(event.value);
-				input = '';
-				options = multiple ? data.filter((item) => !value.includes(item.value)) : data;
-			} else {
-				value = event.value;
-			}
-		},
-		onInputValueChange(event) {
-			const filtered = data.filter((item) =>
-				item.label.toLowerCase().includes(event.inputValue.toLowerCase())
-			);
-			const used = multiple ? filtered.filter((item) => !value.includes(item.value)) : filtered;
-			collection.setItems(used);
-			options = used;
-			zagProps.onInputValueChange?.(event);
-		}
-	}));
-	const api = $derived(combobox.connect(service, normalizeProps));
-	const triggerProps = $derived(mergeProps(api.getTriggerProps(), { onclick }));
-</script>
-
-<span {...api.getRootProps()} class="{base} {width} {classes}" data-testid="combobox">
-	<!-- Label -->
-	<label
-		{...api.getLabelProps()}
-		class="{labelBase} {labelClasses} {chipPosition == 'right'
-			? 'flex flex-row items-center gap-2'
-			: ''}"
-	>
-		{#if label}<span class={labelText}>{label}</span>{/if}
-		<!-- Input Group -->
-		<div {...api.getControlProps()} class="{inputGroupBase} {inputGroupClasses}">
-			<!-- Input -->
-			<input {...api.getInputProps()} bind:value={input} class={inputGroupInput} />
-			<!-- Arrow -->
-			<button {...triggerProps} class={inputGroupButton}>
-				{#if arrow}
-					{@render arrow()}
-				{:else}
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						style="opacity: 0.5"
-						class={inputGroupArrow}
-					>
-						<path d="m6 9 6 6 6-6" />
-					</svg>
-				{/if}
-			</button>
-		</div>
-
-		<!-- Chips -->
-		{#if multiple}
-			<div class={chipContainerBase}>
-				{#each data
-					.filter((v) => value.includes(v.value))
-					.toSorted((x, v) => x.value.localeCompare(v.value)) as { label, value: v }}
-					<button
-						type="button"
-						class={chipBase}
-						onclick={() => (value = value.filter((x) => x != v))}>{label} x</button
-					>
-				{/each}
-			</div>
-		{/if}
-	</label>
-	<!-- Menu -->
-	{#if api.open}
-		<div
-			{...api.getPositionerProps()}
-			transition:fade={{ duration: 100 }}
-			class="{positionerBase} {positionerClasses}"
-		>
-			{#if options.length > 0}
-				<!-- Content (list) -->
-				<nav
-					{...api.getContentProps()}
-					class="{contentBase} {contentBackground} {contentSpaceY} {contentClasses}"
-					style="z-index: {zIndex}"
-				>
-					{#each options as option (option.label)}
-						{@const isChecked = api.getItemProps({ item: option })['data-state'] === 'checked'}
-						{@const displayClass = isChecked ? optionActive : optionHover}
-						<!-- Option -->
-						<!-- ZagJs should have set button type to "button" here. -->
-						<!-- See https://github.com/skeletonlabs/skeleton/pull/2998#discussion_r1855511385 -->
-						<button
-							{...api.getItemProps({ item: option })}
-							class="{optionBase} {displayClass} {optionClasses}"
-							type="button"
-						>
-							{#if item}
-								{@render item(option)}
-							{:else}
-								{option.label}
-							{/if}
-						</button>
-					{/each}
-				</nav>
-			{/if}
-		</div>
-	{/if}
-</span>
-
-<style>
-	[data-part='item'][data-highlighted]:not([data-state='checked']) {
-		background-color: var(--color-surface-200-800);
+	function getFiltered() {
+		return data.filter((v) => ignore_filter || v.label.includes(filter));
 	}
 
+	$effect(() => {
+		if (thisChipContainer)
+			if (chipContainer) {
+				chipContainer.appendChild(thisChipContainer);
+			}
+	});
+</script>
+
+<div
+	bind:this={element}
+	class="relative"
+	role="combobox"
+	aria-controls="combobox-values"
+	aria-expanded={open}
+	tabindex="-1"
+	onfocusout={(e) => {
+		if (e.relatedTarget && element.contains(e.relatedTarget as any)) return;
+		open = false;
+		if (!multiple) {
+			ignore_filter = false;
+			if (getFiltered().length !== 1) {
+				filter = '';
+				value = [];
+			} else {
+				filter = getFiltered()[0].label;
+				value = [getFiltered()[0].value];
+			}
+		} else {
+			filter = '';
+		}
+	}}
+	onkeydown={(e) => {
+		if (e.key === 'Escape') open = false;
+	}}
+>
+	<div
+		class="border-surface-800 rounded-base m-0 my-2 flex flex-row items-center items-start border-2 p-0"
+	>
+		<input
+			class="ig-input flex-1 items-start px-2 outline-none"
+			bind:value={filter}
+			onfocusin={() => {
+				open = true;
+				if (getFiltered().length === 1) {
+					ignore_filter = true;
+				}
+			}}
+			onkeydown={() => {
+				ignore_filter = false;
+			}}
+			class:text-red-400={getFiltered().length === 0}
+		/>
+
+		<button
+			class="ig-input-arrow btn-icon bg-surface-800 h-full rounded-none py-2"
+			onclick={() => {
+				open = true;
+				ignore_filter = true;
+			}}
+		>
+			<ChevronDown />
+		</button>
+	</div>
+
+	{#if multiple}
+		<div bind:this={thisChipContainer} class="flex flex-1 flex-row flex-wrap gap-2">
+			{#each data.filter((v) => value.includes(v.value)) as { value: data_value, label }}
+				<button
+					class="chip bg-surface-600"
+					onclick={() => {
+						value = value.filter((v) => v !== data_value);
+					}}>{label} <X size="10px" /></button
+				>
+			{/each}
+		</div>
+	{/if}
+
+	<div
+		id="combobox-values"
+		class="combobox-values bg-surface-900 border-surface-500 absolute z-1 my-2 max-h-40 w-full items-center overflow-scroll rounded-md border-2 px-1 py-2"
+		class:hidden={!open}
+	>
+		{#each getFiltered() as { value: data_value, label }}
+			{@const checked = value.includes(data_value)}
+			<button
+				class="hover:bg-surface-800 rounded-base flex w-full flex-1 px-2 py-2 outline-none"
+				tabindex="-1"
+				onclick={() => {
+					if (checked) value = value.filter((v) => v !== data_value);
+					else {
+						value = multiple ? value.concat(data_value) : [data_value];
+						if (!multiple) filter = label;
+						else filter = '';
+						ignore_filter = true;
+					}
+				}}
+			>
+				<div class="w-8" class:invisible={!checked}>
+					<Check />
+				</div>
+				<p class="flex-1 items-center text-center">{label}</p>
+				<div class="w-8"></div>
+			</button>
+		{/each}
+	</div>
+</div>
+
+<style>
 	.ig-input {
-		outline: none;
+		border-radius: 0;
 		background-color: transparent;
-		border-radius: var(--radius-base) /* 0.25rem = 4px */;
+		border-radius: 0;
 		display: block;
+		width: 100%;
 		font-size: var(--text-base)
 			/* calc(1rem * var(--text-scaling)) = calc(16px * var(--text-scaling)) */;
 		line-height: var(--text-base--line-height) /* calc(calc(1.5 / 1) ≈ 1.5 * var(--text-scaling)) */;
@@ -297,11 +149,6 @@
 		padding-inline: calc(var(--spacing) * 3) /* 0.75rem = 12px */;
 		outline-color: transparent;
 		border-width: 0;
-		--tw-ring-inset: inset;
-		--tw-ring-color: var(--color-surface-200-800)
-			/* light-dark(var(--color-surface-200), var(--color-surface-800)) */;
-		--tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 var(--default-ring-width) /* 1px */
-			var(--tw-ring-color, currentColor);
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow),
 			var(--tw-ring-shadow), var(--tw-shadow);
@@ -318,14 +165,5 @@
 			color: var(--color-surface-700-300)
 				/* light-dark(var(--color-surface-700), var(--color-surface-300)) */;
 		}
-	}
-
-	.chip-container {
-		width: var(--container-2xl);
-		display: flex;
-		flex-direction: row;
-		margin-top: 0;
-		overflow: scroll;
-		gap: 5px;
 	}
 </style>

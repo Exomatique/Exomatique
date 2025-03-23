@@ -51,13 +51,12 @@
 
 		onSearch(true);
 	});
+	let container: HTMLElement | undefined = $state();
 </script>
 
 <div class="relative flex flex-col gap-5 p-5">
 	<div class="relative flex flex-row items-center gap-5">
-		<div
-			class="bg-surface-900 z-10 flex flex-1 flex-row items-center gap-5 rounded-2xl p-5 text-lg"
-		>
+		<div class="bg-surface-900 flex flex-1 flex-row items-center gap-5 rounded-2xl p-5 text-lg">
 			<input
 				class="ig-input input max-w-md shrink grow-0 outline-none"
 				placeholder={m.title()}
@@ -69,18 +68,18 @@
 				<Search />
 			</button>
 
-			<Combobox
-				data={tagsData}
-				multiple
-				chipPosition="right"
-				bind:value={filterTags}
-				placeholder={m.tags()}
-				>{#snippet item(item)}
-					<div class="flex w-full justify-between space-x-2">
-						<span>{item.label}</span>
-					</div>
-				{/snippet}
-			</Combobox>
+			<div class="max-w-md">
+				<Combobox
+					data={tagsData || []}
+					multiple
+					bind:value={filterTags}
+					bind:chipContainer={container}
+				/>
+			</div>
+
+			<div class="flex flex-1">
+				<div class="max-h-10 overflow-scroll" bind:this={container}></div>
+			</div>
 		</div>
 
 		<button

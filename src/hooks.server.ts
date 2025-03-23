@@ -13,7 +13,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 	const { session, user } = await auth.validateSessionToken(sessionToken);
 	if (session) {
-		auth.setSessionTokenCookie(event, sessionToken, session.persistent ? session.expiresAt : undefined);
+		auth.setSessionTokenCookie(
+			event,
+			sessionToken,
+			session.persistent ? session.expiresAt : undefined
+		);
 	} else {
 		auth.deleteSessionTokenCookie(event);
 	}
@@ -24,10 +28,4 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-const handleParaglide: Handle = async (input) => {
-	if (input.event.url.pathname.startsWith("/api/")) {
-		return input.resolve(input.event);
-	}
-	return i18n.handle()(input);
-}
-export const handle: Handle = sequence(handleAuth, handleParaglide);
+export const handle: Handle = sequence(handleAuth, i18n.handle());

@@ -14,7 +14,7 @@
 
 	let tagsData: ComboboxData[] | undefined = $state(undefined);
 
-	let tags = $state([]);
+	let tags: string[] = $state([]);
 
 	let {
 		document_id,
@@ -60,6 +60,12 @@
 
 		get('/tags').then((v) => {
 			tagsData = v.data as ComboboxData[];
+
+			tagsData = '1'
+				.repeat(40)
+				.split('1')
+				.map((v, i) => ({ value: 'Test ' + i, label: 'Test ' + i }));
+			tags = tagsData.map((v) => v.value);
 		});
 	});
 
@@ -81,6 +87,8 @@
 		if (deletionConfirmText !== title) return;
 		await post('/document/delete', { document_id }).finally(() => goto('/exercises'));
 	}
+
+	let container: HTMLElement | undefined = $state(undefined);
 </script>
 
 <div class="relative flex h-full flex-1 justify-center">
@@ -133,14 +141,17 @@
 			<label class="label m-2 flex items-center justify-center gap-5 selection:outline-none">
 				<span class="text-nowrap">{m.tags()} :</span>
 
-				<Combobox data={tagsData} multiple bind:value={tags} placeholder="Select..."
-					>{#snippet item(item)}
-						<div class="flex w-full justify-between space-x-2">
-							<span>{item.label}</span>
-						</div>
-					{/snippet}</Combobox
-				>
+				<Combobox data={tagsData || []} multiple bind:value={tags} chipContainer={container} />
 			</label>
+			{#if tags.length > 0}
+				<div class="border-surface-700 rounded-base w-4/5 border p-2">
+					<div
+						bind:this={container}
+						class="flex max-h-14 flex-row flex-wrap justify-start self-start overflow-scroll"
+					></div>
+				</div>
+			{/if}
+
 			<button
 				class="btn absolute right-5 bottom-5 border-2 border-red-400 shadow-sm shadow-red-400"
 				onclick={() => (deletePopoverState = true)}
