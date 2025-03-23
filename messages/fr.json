@@ -39,5 +39,8 @@
 	"exercise_error_common_issues": "Les raisons les plus courantes sont :",
 	"exercise_error_issue_0": "L'exercice a été supprimé",
 	"exercise_error_issue_1": "Vous n'y avez pas accès (essayez de vous connecter)",
-	"exercise_error_issue_2": "Il n'existe simplement pas"
+	"exercise_error_issue_2": "Il n'existe simplement pas",
+	"home_0": "Ce site est en construction.",
+	"home_1": "Pour participer aux discussions venez sur notre discord !",
+	"home_2": "Si vous voulez nous faire part d'un bug ou d'une fonctionnaltié manquante, ça se passe sur Github"
 }

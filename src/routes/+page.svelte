@@ -1,31 +1,39 @@
-<script lang="ts">
-	import type { ExoData } from '@exomatique/editor';
-	import {
-		DefinitionModule,
-		Editor,
-		ExoEditor,
-		LatexModule,
-		MdModule,
-		TheoremModule,
-		VideoModule
-	} from '@exomatique/editor';
-
-	const exo_editor = new ExoEditor({
-		modules: [
-			new MdModule(),
-			new DefinitionModule(),
-			new TheoremModule(),
-			new LatexModule(),
-			new VideoModule()
-		],
-		default_module: 'md'
-	});
-
-	let data: ExoData = $state([]);
+<script>
+	import Icon from '../components/Icon.svelte';
+	import * as m from '$lib/paraglide/messages.js';
+	import { Construction, Github } from '@lucide/svelte';
 </script>
 
-<div class="relative flex h-full flex-1 justify-center">
-	<div class="absolute h-full w-3/4 grow flex-row text-neutral-950 scheme-light">
-		<Editor {exo_editor} bind:data />
+<div class="flex h-full w-full flex-1 items-center justify-center">
+	<div class="relative flex flex-col items-center rounded-xl border-2 border-yellow-600 p-10">
+		<Icon size={'small'} />
+
+		<p class="mt-5 self-start">
+			{m.home_0()}
+		</p>
+		<p class="mt-5 self-start">
+			{m.home_1()}
+		</p>
+		<p class="mt-5 self-start">
+			{m.home_2()}
+		</p>
+
+		<div class="mt-5 flex flex-row items-center gap-5">
+			<a
+				class="opacity-50 hover:opacity-100"
+				href="https://github.com/Exomatique/Exomatique"
+				target="_blank"
+			>
+				<Github size="110" />
+			</a>
+			<a
+				class="opacity-50 hover:opacity-100"
+				aria-label="discord invite"
+				href="https://discord.gg/Fxj2VCv8pH"
+				target="_blank"
+			>
+				<img alt="discord invite" src="http://invidget.switchblade.xyz/Fxj2VCv8pH" />
+			</a>
+		</div>
 	</div>
 </div>

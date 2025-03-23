@@ -39,5 +39,8 @@
 	"exercise_error_common_issues": "Common issues are :",
 	"exercise_error_issue_0": "This exercise was deleted",
 	"exercise_error_issue_1": "You do not have access to it (try logging in)",
-	"exercise_error_issue_2": "It simply does not exists"
+	"exercise_error_issue_2": "It simply does not exists",
+	"home_0": "This website is under construction",
+	"home_1": "To chat about it, come on our discord server !",
+	"home_2": "For any bug reporting or any feature request, come on our github page"
 }
