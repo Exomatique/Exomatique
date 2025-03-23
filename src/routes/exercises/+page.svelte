@@ -86,7 +86,7 @@
 		<button
 			disabled={isCreating}
 			onclick={onNewDocument}
-			class="btn bg-surface-700 self-start rounded-2xl p-7"
+			class={'btn bg-surface-700 self-start rounded-2xl p-7 ' + ($user ? '' : 'invisible')}
 		>
 			{m.new_exercise()}
 			<FileText />
