@@ -25,8 +25,8 @@
 
 <svg
 	aria-hidden="true"
-	width={`calc(4 * ${real_size})`}
-	height={`calc(4 * ${real_size})`}
+	width={`calc(4px * ${real_size})`}
+	height={`calc(4px * ${real_size})`}
 	class={'inline fill-blue-600 text-gray-200 dark:text-gray-600 ' + classValue}
 	viewBox="0 0 100 100"
 	fill="none"

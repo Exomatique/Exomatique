@@ -60,12 +60,6 @@
 
 		get('/tags').then((v) => {
 			tagsData = v.data as ComboboxData[];
-
-			tagsData = '1'
-				.repeat(40)
-				.split('1')
-				.map((v, i) => ({ value: 'Test ' + i, label: 'Test ' + i }));
-			tags = tagsData.map((v) => v.value);
 		});
 	});
 

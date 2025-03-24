@@ -24,7 +24,7 @@
 		const obj = await post('/exercise/create').finally(() => (isCreating = false));
 		const id = obj.document.id;
 
-		goto('/exercises/d/' + id);
+		goto('/exercises/d/' + id + '/edit');
 	}
 
 	async function onSearch(force?: true) {
