@@ -7,3 +7,24 @@ export interface DocumentMeta {
 	authorId: string;
 	visibility: DocumentVisibility;
 }
+
+export function mapVisibilityToNumber(visibility: DocumentVisibility) {
+	switch (visibility) {
+		case 'PUBLIC':
+			1;
+		case 'PROTECTED':
+			0;
+		case 'PRIVATE':
+			-1;
+	}
+}
+
+export function mapNumberToVisiblity(visibility: number) {
+	if (visibility === 1) {
+		return 'PUBLIC';
+	} else if (visibility === 0) {
+		return 'PROTECTED';
+	} else {
+		return 'PRIVATE';
+	}
+}

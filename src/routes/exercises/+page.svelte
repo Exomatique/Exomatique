@@ -9,6 +9,7 @@
 	import type { ExerciseMeta } from '$lib/document/exercises';
 	import Loading from '../../components/Loading.svelte';
 	import { user } from '../../store';
+	import { mapNumberToVisiblity } from '$lib/document';
 
 	interface ComboboxData {
 		label: string;
@@ -36,7 +37,9 @@
 			() => (isSearching = false)
 		);
 
-		exercises = v.data;
+		console.log(v.data);
+		exercises = v.data.map((v: any) => ({ ...v, visibility: mapNumberToVisiblity(v.visibility) }));
+		console.log(exercises);
 	}
 
 	let filterInput = $state('');
