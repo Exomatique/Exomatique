@@ -6,18 +6,6 @@ import { create, read, write } from '$lib/server/file';
 import { prisma } from '$lib/server/client';
 
 export const GET: RequestHandler = async (event) => {
-	const token = event.cookies.get(auth.sessionCookieName);
-
-	if (!token) {
-		error(400, { message: 'account_needed_fail' });
-	}
-
-	const user = await auth.validateSessionToken(token).then((v) => v.user);
-
-	if (!user) {
-		error(400, { message: 'account_needed_fail' });
-	}
-
 	const document_id = event.url.searchParams.get('document_id');
 	const url = event.url.searchParams.get('url');
 
@@ -35,6 +23,20 @@ export const GET: RequestHandler = async (event) => {
 
 	if (!exercise) {
 		error(400, { message: 'document_exist_fail' });
+	}
+
+	if (exercise?.document.visibility === -1) {
+		const token = event.cookies.get(auth.sessionCookieName);
+
+		if (!token) {
+			error(400, { message: 'account_needed_fail' });
+		}
+
+		const user = await auth.validateSessionToken(token).then((v) => v.user);
+
+		if (!user) {
+			error(400, { message: 'account_needed_fail' });
+		}
 	}
 
 	const data = JSON.parse((await read(document_id, url)) || '[]');
