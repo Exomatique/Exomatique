@@ -37,9 +37,7 @@
 			() => (isSearching = false)
 		);
 
-		console.log(v.data);
 		exercises = v.data.map((v: any) => ({ ...v, visibility: mapNumberToVisiblity(v.visibility) }));
-		console.log(exercises);
 	}
 
 	let filterInput = $state('');

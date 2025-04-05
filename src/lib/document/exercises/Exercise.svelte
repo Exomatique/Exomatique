@@ -50,6 +50,11 @@
 	onMount(() => {
 		get('/exercise', { document_id, url: 'index.json' })
 			.then((v) => {
+				if (v.authorId !== $user.id) {
+					onFetchFail();
+					return;
+				}
+
 				exercise = v;
 				data = v.data;
 				title = v.title;
@@ -68,6 +73,7 @@
 	import { goto } from '$app/navigation';
 	import Editor from '../Editor.svelte';
 	import { href, type ExerciseMeta } from './types';
+	import { user } from '../../../store';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');

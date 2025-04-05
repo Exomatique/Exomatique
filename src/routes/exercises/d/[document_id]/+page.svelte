@@ -7,6 +7,7 @@
 	import Loading from '../../../../components/Loading.svelte';
 	import type { ExoData } from '@exomatique/editor';
 	import { href, type ExerciseMeta } from '$lib/document/exercises';
+	import { user } from '../../../../store';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();
@@ -33,7 +34,7 @@
 			<div class="flex w-full grow justify-end px-5 py-2">
 				<h5 class="h5 mx-5 w-full px-2">{title}</h5>
 
-				{#if exercise}
+				{#if exercise && exercise.authorId === $user?.id}
 					<a class="btn bg-surface-200 hover:bg-surface-400 self-end" href={href(exercise, true)}
 						>Edit</a
 					>
