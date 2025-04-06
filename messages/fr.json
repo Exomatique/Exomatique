@@ -19,7 +19,7 @@
 	"exercises_settings": "Paramètre de l'Exercice",
 	"visibility": "Visibilité",
 	"tags": "Etiquettes",
-	"public_visibility": "Publique",
+	"public_visibility": "Public",
 	"protected_visibility": "Protégé",
 	"private_visibility": "Privé",
 	"public_description": "L'exercice sera visible par tout le monde",
