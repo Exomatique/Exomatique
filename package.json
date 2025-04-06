@@ -23,7 +23,7 @@
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
 		"@skeletonlabs/skeleton": "^3.1.0",
-		"@skeletonlabs/skeleton-svelte": "^1.0.0",
+		"@skeletonlabs/skeleton-svelte": "^1.2.0",
 		"@storybook/addon-essentials": "^8.6.2",
 		"@storybook/addon-svelte-csf": "^5.0.0-next.24",
 		"@storybook/blocks": "^8.6.2",

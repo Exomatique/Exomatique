@@ -42,5 +42,11 @@
 	"exercise_error_issue_2": "It simply does not exists",
 	"home_0": "This website is under construction",
 	"home_1": "To chat about it, come on our discord server !",
-	"home_2": "For any bug reporting or any feature request, come on our github page"
+	"home_2": "For any bug reporting or any feature request, come on our github page",
+	"save_fail": "Error happened during saving",
+	"saved": "Saved",
+	"saving": "Saving ...",
+	"saving_description": "Currently saving ...",
+	"saved_description": "Saving was done successfully",
+	"save_fail_description": "Saving failed"
 }

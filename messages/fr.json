@@ -42,5 +42,11 @@
 	"exercise_error_issue_2": "Il n'existe simplement pas",
 	"home_0": "Ce site est en construction.",
 	"home_1": "Pour participer aux discussions venez sur notre discord !",
-	"home_2": "Si vous voulez nous faire part d'un bug ou d'une fonctionnaltié manquante, ça se passe sur Github"
+	"home_2": "Si vous voulez nous faire part d'un bug ou d'une fonctionnaltié manquante, ça se passe sur Github",
+	"save_fail": "Erreur lors de la sauvegarde",
+	"saved": "Sauvegardé",
+	"saving": "En train de sauvegarder ...",
+	"saving_description": "La sauvegarde est en cours ...",
+	"saved_description": "La sauvegarde a été effectué avec succès",
+	"save_fail_description": "La sauvegarde à échoué"
 }

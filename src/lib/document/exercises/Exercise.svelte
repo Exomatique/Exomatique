@@ -2,10 +2,11 @@
 	import type { ExoData } from '@exomatique/editor';
 	import Loading from '../../../components/Loading.svelte';
 	import { onMount } from 'svelte';
-	import { get, post } from '$lib/utils';
+	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
 	import Combobox from '../../../components/utils/Combobox.svelte';
 	import { Trash } from '@lucide/svelte';
+	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 
 	interface ComboboxData {
 		label: string;
@@ -35,14 +36,44 @@
 	async function save() {
 		lastSaved = new Date().getTime();
 		isSaving = true;
-		post('/exercise', {
-			document_id,
-			url: 'index.json',
-			data,
-			title,
-			tags,
-			visibility: Number.parseInt(visibility)
-		}).finally(() => (isSaving = false));
+
+		const langs = {
+			save_fail: undefined,
+			saved: undefined,
+			saving: undefined,
+			saving_description: undefined,
+			saved_description: undefined,
+			save_fail_description: undefined
+		};
+
+		await Promise.all(Object.keys(langs).map(async (v, i) => [v, (await lang(v)) || v])).then(
+			(list) => list.forEach(([v, lang_value]) => ((langs as any)[v] = lang_value))
+		);
+
+		toaster.promise(
+			post('/exercise', {
+				document_id,
+				url: 'index.json',
+				data,
+				title,
+				tags,
+				visibility: Number.parseInt(visibility)
+			}).finally(() => (isSaving = false)),
+			{
+				loading: {
+					title: langs.saving,
+					description: langs.saving_description
+				},
+				success: () => ({
+					title: langs.saved,
+					description: langs.saved_description
+				}),
+				error: () => ({
+					title: langs.save_fail,
+					description: langs.save_fail_description
+				})
+			}
+		);
 	}
 
 	let exercise = $state(undefined as ExerciseMeta | undefined);
@@ -89,7 +120,10 @@
 	}
 
 	let container: HTMLElement | undefined = $state(undefined);
+	const toaster = createToaster({ placement: 'bottom-end' });
 </script>
+
+<Toaster {toaster}></Toaster>
 
 <div class="relative flex h-full flex-1 justify-center">
 	<div class="absolute w-3/4 grow flex-row bg-white text-neutral-950 scheme-light">
@@ -97,11 +131,17 @@
 			<div class="flex w-full grow justify-end px-5 py-2">
 				<input class="mx-5 w-full px-2" maxlength="128" type="text" bind:value={title} />
 				{#if exercise}
-					<a class="btn bg-surface-200 hover:bg-surface-400 mr-5 self-end" href={href(exercise)}
-						>View</a
+					<a
+						class="btn bg-surface-200 hover:bg-surface-400 mr-5 self-end"
+						href={href(exercise)}
+						class:disabled={isSaving}
+						onclick={save}>View</a
 					>
 				{/if}
-				<button class="btn bg-surface-200 hover:bg-surface-400 self-end" onclick={save}>Save</button
+				<button
+					class="btn bg-surface-200 hover:bg-surface-400 self-end"
+					class:disabled={isSaving}
+					onclick={save}>Save</button
 				>
 			</div>
 			<Editor editable bind:data />
