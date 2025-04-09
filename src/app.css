@@ -5,7 +5,12 @@
 @import '@skeletonlabs/skeleton/optional/presets';
 @import '@skeletonlabs/skeleton/themes/cerberus';
 
-@source '../node_modules/@exomatique/editor/dist';
+@source '../node_modules/@exomatique_editor/base/dist';
+@source '../node_modules/@exomatique_editor/semantic/dist';
+@source '../node_modules/@exomatique_editor/md/dist';
+@source '../node_modules/@exomatique_editor/latex/dist';
+@source '../node_modules/@exomatique_editor/graph/dist';
+
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
 
 input:-webkit-autofill {
