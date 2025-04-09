@@ -1,3 +1,3 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
 
-export let lang_store = writable("en");
+export let lang_store = writable('en');

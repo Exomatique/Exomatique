@@ -15,7 +15,6 @@ export function generateSessionToken() {
 }
 
 export async function createSession(token: string, userId: string, rememberme: boolean) {
-
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const session = {
 		id: sessionId,
@@ -29,17 +28,14 @@ export async function createSession(token: string, userId: string, rememberme: b
 
 export async function validateSessionToken(token: string) {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	const session = await
-		prisma.session.findFirst(
-			{
-				include: {
-					user: true
-				},
-				where: {
-					id: sessionId
-				}
-			}
-		)
+	const session = await prisma.session.findFirst({
+		include: {
+			user: true
+		},
+		where: {
+			id: sessionId
+		}
+	});
 
 	if (!session) {
 		return { session: null, user: null };
@@ -54,7 +50,10 @@ export async function validateSessionToken(token: string) {
 	const renewSession = Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15;
 	if (renewSession) {
 		session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
-		await prisma.session.update({ where: { id: sessionId }, data: { expiresAt: session.expiresAt } })
+		await prisma.session.update({
+			where: { id: sessionId },
+			data: { expiresAt: session.expiresAt }
+		});
 	}
 
 	return { session, user: session.user };
@@ -78,7 +77,6 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 		path: '/'
 	});
 }
-
 
 export function generateUserId() {
 	// ID with 120 bits of entropy, or about the same as UUID v4.

@@ -57,7 +57,11 @@
 		"vitest": "^3.0.7"
 	},
 	"dependencies": {
-		"@exomatique/editor": "^1.4.3",
+		"@exomatique_editor/base": "^1.0.0",
+		"@exomatique_editor/graph": "^1.0.0",
+		"@exomatique_editor/latex": "^1.0.0",
+		"@exomatique_editor/md": "^1.0.0",
+		"@exomatique_editor/semantic": "^1.0.0",
 		"@inlang/paraglide-sveltekit": "^0.15.5",
 		"@libsql/client": "^0.14.0",
 		"@lucide/svelte": "^0.483.0",

@@ -5,9 +5,9 @@
 	import { get } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import Loading from '../../../../components/Loading.svelte';
-	import type { ExoData } from '@exomatique/editor';
 	import { href, type ExerciseMeta } from '$lib/document/exercises';
 	import { user } from '../../../../store';
+	import type { ExoData } from '@exomatique_editor/base';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();

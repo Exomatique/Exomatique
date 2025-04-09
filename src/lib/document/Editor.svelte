@@ -1,13 +1,9 @@
 <script lang="ts">
-	import type { ExoData, SemanticVariant } from '@exomatique/editor';
-	import {
-		Editor,
-		ExoEditor,
-		LatexModule,
-		MdModule,
-		SemanticModule,
-		VideoModule
-	} from '@exomatique/editor';
+	import { Editor, ExoEditor, type ExoData } from '@exomatique_editor/base';
+	import { GraphModule } from '@exomatique_editor/graph';
+	import { LatexModule } from '@exomatique_editor/latex';
+	import { MdModule } from '@exomatique_editor/md';
+	import { SemanticModule, type SemanticVariant } from '@exomatique_editor/semantic';
 
 	let { data = $bindable(), editable = $bindable(false) }: { data: ExoData; editable?: boolean } =
 		$props();
@@ -41,7 +37,7 @@
 	];
 
 	const exo_editor = new ExoEditor({
-		modules: [new MdModule(), new SemanticModule(variants), new LatexModule(), new VideoModule()],
+		modules: [new MdModule(), new SemanticModule(variants), new LatexModule(), new GraphModule()],
 		default_module: 'md'
 	});
 </script>

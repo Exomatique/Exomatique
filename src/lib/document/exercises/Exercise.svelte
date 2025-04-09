@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ExoData } from '@exomatique/editor';
 	import Loading from '../../../components/Loading.svelte';
 	import { onMount } from 'svelte';
 	import { get, lang, post } from '$lib/utils';
@@ -105,6 +104,7 @@
 	import Editor from '../Editor.svelte';
 	import { href, type ExerciseMeta } from './types';
 	import { user } from '../../../store';
+	import type { ExoData } from '@exomatique_editor/base';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
