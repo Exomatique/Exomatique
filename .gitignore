@@ -28,6 +28,9 @@ vite.config.ts.timestamp-*
 # Paraglide
 src/lib/paraglide
 
+# VsCode
+.vscode
+
 *storybook.log
 
 # Remove datasource
