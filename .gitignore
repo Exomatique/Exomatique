@@ -1,5 +1,11 @@
 node_modules
 
+# Code editor
+.vscode
+.storybook
+*storybook.log
+
+
 # Output
 .output
 .vercel
@@ -27,11 +33,6 @@ vite.config.ts.timestamp-*
 
 # Paraglide
 src/lib/paraglide
-
-# VsCode
-.vscode
-
-*storybook.log
 
 # Remove datasource
 src/lib/server/schema/datasource.prisma
