@@ -14,10 +14,11 @@
 
 	if (data?.user) user.set({ id: data.user.id, name: data.user.name });
 
-	let routes = [
+	let routes = $state([
 		{ value: '', text: () => m.home() },
-		{ value: 'exercises', text: () => m.exercises() }
-	];
+		{ value: 'exercises', text: () => m.exercises() },
+		...(data?.user ? [{ value: 'documents', text: () => m.documents() }] : [])
+	]);
 
 	let open_login = $state(false);
 	let open_register = $state(false);

@@ -4,6 +4,6 @@ export interface ExerciseMeta extends DocumentMeta {
 	tags: string[];
 }
 
-export function href(exercise: ExerciseMeta, edit?: boolean) {
-	return '/exercises/d/' + exercise.id + (edit ? '/edit' : '');
+export function href(document: DocumentMeta, edit?: boolean) {
+	return '/exercises/d/' + document.id + (edit ? '/edit' : '');
 }

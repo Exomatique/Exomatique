@@ -48,5 +48,6 @@
 	"saving": "Saving ...",
 	"saving_description": "Currently saving ...",
 	"saved_description": "Saving was done successfully",
-	"save_fail_description": "Saving failed"
+	"save_fail_description": "Saving failed",
+	"documents": "Documents"
 }

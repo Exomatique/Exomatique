@@ -48,5 +48,6 @@
 	"saving": "En train de sauvegarder ...",
 	"saving_description": "La sauvegarde est en cours ...",
 	"saved_description": "La sauvegarde a été effectuée avec succès",
-	"save_fail_description": "La sauvegarde a échoué"
+	"save_fail_description": "La sauvegarde a échoué",
+	"documents": "Documents"
 }
