@@ -101,10 +101,11 @@
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
 	import { goto } from '$app/navigation';
-	import { href, type DocumentMeta } from './types';
+	import { href, mapNumberToVisiblity, type DocumentMeta } from './types';
 	import { user } from '../../store';
 	import type { ExoData } from '@exomatique_editor/base';
 	import Editor from './Editor.svelte';
+	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
@@ -121,18 +122,53 @@
 
 	let container: HTMLElement | undefined = $state(undefined);
 	const toaster = createToaster({ placement: 'bottom-end' });
+
+	let tagContainer: HTMLElement | undefined = $state(undefined);
+	let tag_select = $state(0);
+	let inputEl: HTMLInputElement | undefined = $state(undefined);
+	let filterTag = $state('');
+
+	let filtered = $derived(
+		((tagsData as any as ComboboxData[]) || [])
+			.filter((v) => v.label.toLocaleLowerCase().startsWith(filterTag.toLowerCase()))
+			.filter((v) => !tags.includes(v.value))
+	);
+
+	function onChoice(choice_index: number) {
+		tags.push(filtered[choice_index].value);
+		console.log(tags);
+	}
 </script>
 
 <Toaster {toaster}></Toaster>
 
-<div class="relative flex h-full flex-1 justify-center">
-	<div class="absolute w-3/4 grow flex-row bg-white text-neutral-950 scheme-light">
-		{#if data}
-			<div class="flex w-full grow justify-end px-5 py-2">
-				<input class="mx-5 w-full px-2" maxlength="128" type="text" bind:value={title} />
+<div class="relative flex h-full flex-1 flex-col items-center">
+	{#if data}
+		<div
+			class="relative mt-5 mb-10 w-3/4 flex-row rounded-md bg-white text-neutral-950 scheme-light"
+		>
+			<div class="flex w-full grow justify-end gap-5 px-5 py-2">
+				{#key document?.visibility}
+					<button
+						title={visibility === '-1'
+							? m.private_description()
+							: visibility === '0'
+								? m.protected_description()
+								: m.public_description()}
+						onclick={(e) => {
+							if (visibility === '-1') visibility = '1';
+							else if (visibility === '1') visibility = '0';
+							else visibility = '-1';
+						}}
+					>
+						<VisibilityBadge value={mapNumberToVisiblity(Number.parseInt(visibility))} />
+					</button>
+				{/key}
+
+				<input class="w-full px-2" maxlength="128" type="text" bind:value={title} />
 				{#if document}
 					<a
-						class="btn bg-surface-200 hover:bg-surface-400 mr-5 self-end"
+						class="btn bg-surface-200 hover:bg-surface-400 self-end"
 						href={href(document)}
 						class:disabled={isSaving}
 						onclick={save}>View</a
@@ -143,78 +179,101 @@
 					class:disabled={isSaving}
 					onclick={save}>Save</button
 				>
+
+				<button
+					class="btn right-5 bottom-5 border-2 border-red-400 shadow-sm shadow-red-400"
+					onclick={() => (deletePopoverState = true)}
+				>
+					<Trash color="red" />
+				</button>
 			</div>
+			<div class="flex w-full grow flex-wrap justify-start gap-1 px-5 py-2">
+				{#each (tagsData || []).filter((v) => tags.includes(v.value)) as tag}
+					<button
+						class="button btn-base chip preset-filled"
+						onclick={() => {
+							tags = tags.filter((v) => tag.value !== v);
+						}}>{tag.label} x</button
+					>
+				{/each}
+
+				<Popover
+					positioning={{ placement: 'top' }}
+					triggerBase="hover:bg-surface-100 ignore-focus px-2 rounded-lg btn-base"
+					contentBase="scheme-light text-neutral-950 flex flex-col relative rounded-lg border-2 border-surface-300 bg-surface-50 p-2"
+					arrow
+					arrowBackground="!bg-surface-200 dark:!bg-surface-800"
+				>
+					{#snippet trigger()}
+						<i class="fa-solid fa-plus"></i>
+					{/snippet}
+
+					{#snippet content()}
+						<div
+							role="none"
+							class="bg-surface-100 m-2 flex flex-row items-center rounded-lg p-1"
+							onkeydown={(e) => {
+								if (e.key === 'ArrowUp') {
+									tag_select = Math.max(tag_select - 1, 0);
+									tagContainer?.children[tag_select].scrollIntoView(false);
+								} else if (e.key === 'ArrowDown') {
+									tag_select = Math.min(tag_select + 1, filtered.length - 1);
+									tagContainer?.children[tag_select].scrollIntoView(false);
+								} else if (e.key === 'Enter' || e.key === 'Space') {
+									onChoice(tag_select);
+								}
+							}}
+						>
+							<i class="fa-solid fa-magnifying-glass mx-2"></i>
+							<input
+								bind:this={inputEl}
+								class="bg-surface-100 outline-none"
+								bind:value={filterTag}
+								onchange={() => (tag_select = -1)}
+							/>
+						</div>
+
+						<div
+							bind:this={tagContainer}
+							class="ignore-focus flex max-h-40 flex-1 flex-col overflow-scroll"
+						>
+							{#each filtered.map((v, i) => ({ index: i, value: v.label })) as { index, value: k }}
+								<button
+									class="hover:bg-surface-100 m-1 flex flex-1 flex-row items-center gap-5 rounded-lg px-4"
+									class:bg-surface-100={tag_select === index}
+									onclick={() => {
+										onChoice(index);
+									}}
+									onmouseenter={() => {
+										tag_select = index;
+									}}
+									onmouseleave={() => {
+										tag_select = -1;
+									}}
+								>
+									{k}
+								</button>
+							{/each}
+						</div>
+					{/snippet}
+				</Popover>
+			</div>
+		</div>
+	{/if}
+	<div
+		class="relative w-3/4 flex-row rounded-md bg-white p-2 text-neutral-950 scheme-light"
+		class:mt-5={!Boolean(data)}
+	>
+		{#if data}
 			<Editor editable bind:data />
 		{:else}
-			<div class=" pr-2 pb-2">
+			<div class="pr-2 pb-2">
 				<div class="flex w-full grow justify-center shadow-2xl">
 					<Loading size={'extra-large'} />
 				</div>
 			</div>
 		{/if}
 	</div>
-</div>
-
-<div
-	class={'bg-surface-800 absolute top-0 left-0 flex h-full flex-row ' +
-		(params_open ? 'w-1/3' : '')}
->
-	{#if params_open}
-		<div class="flex grow flex-col items-center">
-			<h2 class="h2 mb-2">{m.documents_settings()}</h2>
-			<label class="label m-2 flex items-center justify-center gap-5 text-nowrap">
-				<span class="text-nowrap">{m.visibility()} :</span>
-				<select class="select m-2 max-w-3xs p-1 px-2" bind:value={visibility}>
-					<option selected={visibility === '1'} value="1">{m.public_visibility()}</option>
-					<option selected={visibility === '0'} value="0">{m.protected_visibility()}</option>
-					<option selected={visibility === '-1'} value="-1">{m.private_visibility()}</option>
-				</select>
-			</label>
-			{#if visibility === '1'}
-				<span class="text-primary-200">{m.public_description()}</span>
-			{:else if visibility === '0'}
-				<span class="text-secondary-200">{m.protected_description()}</span>
-			{:else}
-				<span class="text-red-200">{m.private_description()}</span>
-			{/if}
-
-			<label class="label m-2 flex items-center justify-center gap-5 selection:outline-none">
-				<span class="text-nowrap">{m.tags()} :</span>
-
-				<Combobox data={tagsData || []} multiple bind:value={tags} chipContainer={container} />
-			</label>
-			{#if tags.length > 0}
-				<div class="border-surface-700 rounded-base w-4/5 border p-2">
-					<div
-						bind:this={container}
-						class="flex max-h-14 flex-row flex-wrap justify-start self-start overflow-scroll"
-					></div>
-				</div>
-			{/if}
-
-			<button
-				class="btn absolute right-5 bottom-5 border-2 border-red-400 shadow-sm shadow-red-400"
-				onclick={() => (deletePopoverState = true)}
-			>
-				<Trash color="red" />
-			</button>
-		</div>
-		<div class="absolute right-2.5 flex h-full w-3 flex-col justify-center">
-			<button aria-label="Show Params" onclick={() => (params_open = !params_open)}>
-				<i class="fa-solid fa-angles-left bg-surface-800 hover:bg-surface-200 rounded-4xl p-2"></i>
-			</button>
-		</div>
-	{:else}
-		<div class="flex w-3 flex-col justify-center">
-			<button
-				aria-label="Show Params"
-				disabled={!Boolean(data)}
-				onclick={() => (params_open = !params_open)}
-			>
-				<i class="fa-solid fa-angles-right bg-surface-800 hover:bg-surface-200 rounded-4xl p-2"></i>
-			</button>
-		</div>
-	{/if}
 </div>
 
 {#if deletePopoverState}
