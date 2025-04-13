@@ -16,8 +16,8 @@
 
 	let routes = $state([
 		{ value: '', text: () => m.home() },
-		{ value: 'exercises', text: () => m.exercises() },
-		...(data?.user ? [{ value: 'documents', text: () => m.documents() }] : [])
+		{ value: 'documents', text: () => m.documents() },
+		...(data?.user ? [{ value: 'your_documents', text: () => m.documents() }] : [])
 	]);
 
 	let open_login = $state(false);

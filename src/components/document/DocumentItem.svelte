@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { href, type ExerciseMeta } from '$lib/document/exercises';
 	import { lang } from '$lib/utils';
 	import { Eye, Pen } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { languageTag, setLanguageTag } from '$lib/paraglide/runtime';
-	import VisibilityBadge from '../document/VisibilityBadge.svelte';
+	import VisibilityBadge from './VisibilityBadge.svelte';
+	import { href, type DocumentMeta } from '$lib/document';
 
-	interface Props extends ExerciseMeta {
+	interface Props extends DocumentMeta {
 		edit?: boolean;
 	}
 
-	const { edit = false, ...exercise }: Props = $props();
+	const { edit = false, ...document }: Props = $props();
 
-	let tags = $state(exercise.tags);
+	let tags = $state(document.tags);
 
 	onMount(async () => {
 		let translated = await Promise.all(
@@ -26,10 +26,10 @@
 	class="card bg-surface-800 border-surface-200 relative flex w-full flex-row gap-5 rounded-2xl border-2 p-5"
 >
 	<div class="flex-1">
-		<h1 class="h5 mb-5">{exercise.title}</h1>
+		<h1 class="h5 mb-5">{document.title}</h1>
 
 		<div class="flex flex-row flex-wrap gap-1">
-			<VisibilityBadge value={exercise.visibility} />
+			<VisibilityBadge value={document.visibility} />
 			{#each tags as tag}
 				<div class="bg-surface-400 rounded-md px-2 py-1">{tag}</div>
 			{/each}
@@ -40,7 +40,7 @@
 		{#if edit}
 			<a
 				class="btn bg-surface-700 border-surface-500 self-start border-1"
-				href={href(exercise, edit)}
+				href={href(document, edit)}
 				target="_blank"
 			>
 				<Pen />
@@ -51,7 +51,7 @@
 
 		<a
 			class="btn bg-surface-700 border-surface-500 self-end border-1"
-			href={href(exercise)}
+			href={href(document)}
 			target="_blank"
 		>
 			<Eye />

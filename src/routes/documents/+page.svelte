@@ -1,72 +1,116 @@
 <script lang="ts">
-	import { mapNumberToVisiblity, type DocumentMeta } from '$lib/document';
-	import { get } from '$lib/utils';
-	import { writable } from 'svelte/store';
-	import { user } from '../../store';
-	import Loading from '../../components/Loading.svelte';
+	import { goto } from '$app/navigation';
+	import { get, post } from '$lib/utils';
+	import { FileText, Search } from '@lucide/svelte';
+	import * as m from '$lib/paraglide/messages.js';
 	import { onMount } from 'svelte';
-	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
-	import { href } from '$lib/document/exercises';
-	import { Eye, Pen } from '@lucide/svelte';
+	import Combobox from '../../components/utils/Combobox.svelte';
+	import Loading from '../../components/Loading.svelte';
+	import { user } from '../../store';
+	import { mapNumberToVisiblity, type DocumentMeta } from '$lib/document';
+	import DocumentItem from '../../components/document/DocumentItem.svelte';
 
-	let data: DocumentMeta[] | undefined = $state(undefined);
+	interface ComboboxData {
+		label: string;
+		value: string;
+	}
+
+	let documents: DocumentMeta[] | undefined = $state(undefined);
+	let isCreating = $state(false);
+	let isSearching = $state(true);
+
+	async function onNewDocument() {
+		isCreating = true;
+		const obj = await post('/document/create').finally(() => (isCreating = false));
+		const id = obj.document.id;
+
+		goto('/documents/d/' + id + '/edit');
+	}
+
+	async function onSearch(force?: true) {
+		if (isSearching && !force) return;
+		documents = undefined;
+		isSearching = true;
+
+		const v = await get('/document/query', { title: filterInput, tag: filterTags }).finally(
+			() => (isSearching = false)
+		);
+
+		documents = v.data.map((v: any) => ({ ...v, visibility: mapNumberToVisiblity(v.visibility) }));
+	}
+
+	let filterInput = $state('');
+	let filterTags = $state([] as string[]);
+
+	let tagsData: ComboboxData[] | undefined = $state(undefined);
 
 	onMount(() => {
-		get('/document/query', { author: $user.id }).then((v) => {
-			data = v.data.filter((v: any) => v.type === 'Exercise') as any[];
+		get('/tags').then((v) => {
+			tagsData = v.data as ComboboxData[];
 		});
+
+		onSearch(true);
 	});
+	let container: HTMLElement | undefined = $state();
 </script>
 
-<div class="bg-surface-800 m-4 flex flex-1 rounded-sm">
-	{#if data}
-		<table class="table">
-			<thead>
-				<tr>
-					<th scope="col">Title</th>
-					<th scope="col">Id</th>
-					<th scope="col">Visibility</th>
-					<th scope="col">Edit</th>
-					<th scope="col">View</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each data as document}
-					<tr>
-						<td>{document.title}</td>
-						<td>{document.id}</td>
-						<td>
-							<VisibilityBadge
-								value={mapNumberToVisiblity(Number.parseInt(document.visibility))}
-							/></td
-						>
+<div class="relative flex flex-col gap-5 p-5">
+	<div class="relative flex flex-row items-center gap-5">
+		<div class="bg-surface-900 flex flex-1 flex-row items-center gap-5 rounded-2xl p-5 text-lg">
+			<input
+				class="ig-input input max-w-md shrink grow-0 outline-none"
+				placeholder={m.title()}
+				type="text"
+				bind:value={filterInput}
+			/>
 
-						<td>
-							<a
-								class="btn bg-surface-700 border-surface-500 self-start border-1"
-								href={href(document, true)}
-								target="_blank"
-							>
-								<Pen />
-							</a>
-						</td>
+			<button class="btn bg-surface-800" onclick={() => onSearch()} disabled={isSearching}>
+				<Search />
+			</button>
 
-						<td>
-							<a
-								class="btn bg-surface-700 border-surface-500 self-end border-1"
-								href={href(document)}
-								target="_blank"
-							>
-								<Eye />
-							</a>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{:else}
-		<div class="flex flex-1 justify-center">
-			<Loading size={'extra-large'} />
+			<div class="max-w-md">
+				<Combobox
+					data={tagsData || []}
+					multiple
+					bind:value={filterTags}
+					bind:chipContainer={container}
+				/>
+			</div>
+
+			<div class="flex flex-1">
+				<div class="max-h-10 overflow-scroll" bind:this={container}></div>
+			</div>
 		</div>
-	{/if}
+
+		<button
+			disabled={isCreating}
+			onclick={onNewDocument}
+			class={'btn bg-surface-700 self-start rounded-2xl p-7 ' + ($user ? '' : 'invisible')}
+		>
+			{m.new_document()}
+			<FileText />
+		</button>
+	</div>
+
+	<div class="flex flex-1 flex-row gap-5">
+		{#if isSearching || !documents}
+			<div
+				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-row items-center justify-center gap-5 rounded-2xl p-5"
+			>
+				<Loading size={'extra-large'} />
+			</div>
+		{:else}
+			<div
+				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-col items-center gap-5 rounded-2xl p-5"
+			>
+				{#if documents.length > 0}
+					{#each documents as exo}
+						<DocumentItem edit={$user && exo.authorId === $user.id} {...exo} />
+					{/each}
+				{:else}
+					<h2 class="h5">{m.no_documents_fail()}</h2>
+				{/if}
+			</div>
+		{/if}
+	</div>
 </div>

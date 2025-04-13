@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Editor from '$lib/document/Editor.svelte';
-	import Exercise from '$lib/document/exercises/Exercise.svelte';
+	import Document from '$lib/document/Document.svelte';
 	import { get } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import Loading from '../../../../components/Loading.svelte';
-	import { href, type ExerciseMeta } from '$lib/document/exercises';
+	import { href, type DocumentMeta } from '$lib/document';
 	import { user } from '../../../../store';
 	import type { ExoData } from '@exomatique_editor/base';
 
@@ -13,18 +13,22 @@
 	let { data: fetch } = $props();
 	let document_id = fetch.document_id;
 
-	let exercise: ExerciseMeta | undefined = $state(undefined);
+	let document: DocumentMeta | undefined = $state(undefined);
 	let data: ExoData | undefined = $state(undefined);
 	let title = $state('');
+
+	console.log('hello');
 
 	onMount(() => {
 		get('/document', { document_id, url: 'index.json' })
 			.then((v) => {
-				exercise = v;
+				document = v;
 				data = v.data;
 				title = v.title;
 			})
-			.catch(() => goto('/exercises/error'));
+			.catch((e) => {
+				goto('/documents/error');
+			});
 	});
 </script>
 
@@ -34,8 +38,8 @@
 			<div class="flex w-full grow justify-end px-5 py-2">
 				<h5 class="h5 mx-5 w-full px-2">{title}</h5>
 
-				{#if exercise && exercise.authorId === $user?.id}
-					<a class="btn bg-surface-200 hover:bg-surface-400 self-end" href={href(exercise, true)}
+				{#if document && document.authorId === $user?.id}
+					<a class="btn bg-surface-200 hover:bg-surface-400 self-end" href={href(document, true)}
 						>Edit</a
 					>
 				{/if}

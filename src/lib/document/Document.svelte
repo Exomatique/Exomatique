@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Loading from '../../../components/Loading.svelte';
+	import Loading from '../../components/Loading.svelte';
 	import { onMount } from 'svelte';
 	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
-	import Combobox from '../../../components/utils/Combobox.svelte';
+	import Combobox from '../../components/utils/Combobox.svelte';
 	import { Trash } from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 
@@ -75,7 +75,7 @@
 		);
 	}
 
-	let exercise = $state(undefined as ExerciseMeta | undefined);
+	let document = $state(undefined as DocumentMeta | undefined);
 
 	onMount(() => {
 		get('/document', { document_id, url: 'index.json' })
@@ -85,7 +85,7 @@
 					return;
 				}
 
-				exercise = v;
+				document = v;
 				data = v.data;
 				title = v.title;
 				tags = v.tags;
@@ -101,10 +101,10 @@
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
 	import { goto } from '$app/navigation';
-	import Editor from '../Editor.svelte';
-	import { href, type ExerciseMeta } from './types';
-	import { user } from '../../../store';
+	import { href, type DocumentMeta } from './types';
+	import { user } from '../../store';
 	import type { ExoData } from '@exomatique_editor/base';
+	import Editor from './Editor.svelte';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
@@ -114,9 +114,9 @@
 		deletePopoverState = false;
 	}
 
-	async function deleteExercise() {
+	async function deleteDocument() {
 		if (deletionConfirmText !== title) return;
-		await post('/document/delete', { document_id }).finally(() => goto('/exercises'));
+		await post('/document/delete', { document_id }).finally(() => goto('/documents'));
 	}
 
 	let container: HTMLElement | undefined = $state(undefined);
@@ -130,10 +130,10 @@
 		{#if data}
 			<div class="flex w-full grow justify-end px-5 py-2">
 				<input class="mx-5 w-full px-2" maxlength="128" type="text" bind:value={title} />
-				{#if exercise}
+				{#if document}
 					<a
 						class="btn bg-surface-200 hover:bg-surface-400 mr-5 self-end"
-						href={href(exercise)}
+						href={href(document)}
 						class:disabled={isSaving}
 						onclick={save}>View</a
 					>
@@ -161,7 +161,7 @@
 >
 	{#if params_open}
 		<div class="flex grow flex-col items-center">
-			<h2 class="h2 mb-2">{m.exercises_settings()}</h2>
+			<h2 class="h2 mb-2">{m.documents_settings()}</h2>
 			<label class="label m-2 flex items-center justify-center gap-5 text-nowrap">
 				<span class="text-nowrap">{m.visibility()} :</span>
 				<select class="select m-2 max-w-3xs p-1 px-2" bind:value={visibility}>
@@ -233,16 +233,16 @@
 			{#snippet trigger()}{/snippet}
 			{#snippet content()}
 				<header class="flex justify-between">
-					<p class="text-xl font-bold">{m.exercise_confirm_delete()}</p>
+					<p class="text-xl font-bold">{m.document_confirm_delete()}</p>
 					<button class="btn-icon hover:preset-tonal" onclick={deletePopoverClose}><IconX /></button
 					>
 				</header>
 				<article>
 					<p class="text-red-400">
-						{m.exercise_confirm_delete_text_0()}
+						{m.document_confirm_delete_text_0()}
 					</p>
 					<p>
-						{m.exercise_confirm_delete_text_1()}
+						{m.document_confirm_delete_text_1()}
 					</p>
 
 					<div class="mt-2 flex flex-row items-center gap-5">
@@ -255,13 +255,13 @@
 						<button
 							class="btn m-2 border-2 border-red-600"
 							disabled={deletionConfirmText !== title}
-							onclick={deleteExercise}
+							onclick={deleteDocument}
 						>
 							<Trash color="red" />
 						</button>
 					</div>
 					<p class={`${deletionConfirmText === title ? 'invisible' : ''} opacity-70`}>
-						{m.exercise_confirm_fail({ title: title || '' })}
+						{m.document_confirm_fail({ title: title || '' })}
 					</p>
 				</article>
 			{/snippet}

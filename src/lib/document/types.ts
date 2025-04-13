@@ -6,6 +6,11 @@ export interface DocumentMeta {
 	author: string;
 	authorId: string;
 	visibility: DocumentVisibility;
+	tags: string[];
+}
+
+export function href(document: DocumentMeta, edit?: boolean) {
+	return '/documents/d/' + document.id + (edit ? '/edit' : '');
 }
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {

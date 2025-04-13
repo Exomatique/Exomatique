@@ -4,7 +4,7 @@ import { json } from '@sveltejs/kit';
 import { error } from '@sveltejs/kit';
 import { create, read, write } from '$lib/server/file';
 import { prisma } from '$lib/server/client';
-import { tags } from '$lib/document/exercises/tags';
+import { tags } from '$lib/document/tags';
 import { lang } from '$lib/server/utils';
 
 export const GET: RequestHandler = async (event) => {

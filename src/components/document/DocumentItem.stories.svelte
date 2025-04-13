@@ -1,22 +1,22 @@
 <script module>
-	import ExerciseItem from './ExerciseItem.svelte';
+	import DocumentItem from './DocumentItem.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 
 	const { Story } = defineMeta({
-		title: 'Exercise/Item',
-		component: ExerciseItem,
+		title: 'Document/Item',
+		component: DocumentItem,
 		tags: ['autodocs'],
 		argTypes: {}
 	});
 </script>
 
 <Story
-	name="Exercise"
+	name="Document"
 	args={{
 		author: 'John Doe',
 		authorId: '42',
 		id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-		title: 'This is a testing exercise object',
+		title: 'This is a testing document object',
 		tags: ['logic', 'complexity'],
 		visibility: 'PUBLIC',
 		edit: false
@@ -24,13 +24,13 @@
 />
 
 <Story
-	name="Exercise with a long title"
+	name="Document with a long title"
 	args={{
 		author: 'John Doe',
 		authorId: '42',
 		id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
 		title:
-			'Exercise with a really long name to test whether alignment works, it should grow the component and take multiple lines. ' +
+			'Document with a really long name to test whether alignment works, it should grow the component and take multiple lines. ' +
 			'Text '.repeat(100),
 		tags: ['logic', 'complexity'],
 		visibility: 'PUBLIC',
@@ -39,12 +39,12 @@
 />
 
 <Story
-	name="Exercise with a lot of tags"
+	name="Document with a lot of tags"
 	args={{
 		author: 'John Doe',
 		authorId: '42',
 		id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-		title: 'This is a testing exercise object',
+		title: 'This is a testing document object',
 		tags: 'logic,'
 			.repeat(20)
 			.split(',')
@@ -55,13 +55,13 @@
 />
 
 <Story
-	name="Exercise with everything big"
+	name="Document with everything big"
 	args={{
 		author: 'John Doe',
 		authorId: '42',
 		id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
 		title:
-			'Exercise with a really long name to test whether alignment works, it should grow the component and take multiple lines. ' +
+			'Document with a really long name to test whether alignment works, it should grow the component and take multiple lines. ' +
 			'Text '.repeat(100),
 		tags: 'logic,'
 			.repeat(20)

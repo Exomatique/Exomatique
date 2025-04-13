@@ -8,13 +8,13 @@
 		<Icon size={'small'} />
 
 		<div class="mt-2 text-lg">
-			<p class="text-wrap">{m.exercise_error_message()}</p>
+			<p class="text-wrap">{m.document_error_message()}</p>
 
-			<p class="mt-5">{m.exercise_error_common_issues()}</p>
+			<p class="mt-5">{m.document_error_common_issues()}</p>
 			<ul class="ml-5 list-disc">
-				<li>{m.exercise_error_issue_0()}</li>
-				<li>{m.exercise_error_issue_1()}</li>
-				<li>{m.exercise_error_issue_2()}</li>
+				<li>{m.document_error_issue_0()}</li>
+				<li>{m.document_error_issue_1()}</li>
+				<li>{m.document_error_issue_2()}</li>
 			</ul>
 		</div>
 	</div>

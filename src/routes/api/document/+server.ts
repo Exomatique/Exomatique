@@ -13,29 +13,51 @@ export const GET: RequestHandler = async (event) => {
 		error(400, { message: 'missing_required_params_fail' });
 	}
 
-	const document = await prisma.document.findFirst({ where: { id: document_id } });
+	const document = await prisma.document.findFirst({
+		where: { id: document_id },
+		include: {
+			author: true,
+			DocumentTagOnDocument: { include: { tag: true } }
+		}
+	});
 
-	if (document?.visibility === -1) {
+	if (!document) {
+		error(400, { message: 'document_exist_fail' });
+	}
+
+	if (document.visibility === -1) {
 		const token = event.cookies.get(auth.sessionCookieName);
 
 		if (!token) {
 			error(400, { message: 'account_needed_fail' });
 		}
+
 		const user = await auth.validateSessionToken(token).then((v) => v.user);
 
 		if (!user) {
 			error(400, { message: 'account_needed_fail' });
 		}
-
-		if (document.authorId !== user.id) {
-			error(400, { message: 'document_private_wrong_acccount_fail' });
-		}
 	}
 
-	const title = (await prisma.document.findFirst({ where: { id: document_id } }))?.title;
 	const data = JSON.parse((await read(document_id, url)) || '[]');
 
-	return json({ ok: 1, title, data });
+	let title = document.title;
+	let authorId = document.authorId;
+	let author = document.author.name;
+	let visibility = document.visibility;
+	let tags = document.DocumentTagOnDocument.map((v) => v.tag.id);
+	let id = document.id;
+
+	return json({
+		ok: 1,
+		title,
+		data,
+		author,
+		authorId,
+		id,
+		tags,
+		visibility
+	});
 };
 
 export const POST: RequestHandler = async (event) => {
@@ -51,10 +73,17 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'account_needed_fail' });
 	}
 
-	const { document_id, url, data, title, visibility } = await event.request.json();
+	const { document_id, url, data, title, tags, visibility } = await event.request.json();
 
 	await write(document_id, url, JSON.stringify(data));
 	await prisma.document.update({ where: { id: document_id }, data: { title, visibility } });
+
+	await prisma.documentTagOnDocument.deleteMany({ where: { DocumentId: document_id } });
+	for await (const tag of tags) {
+		await prisma.documentTagOnDocument.create({
+			data: { DocumentId: document_id, DocumentTagId: tag }
+		});
+	}
 
 	return json({ ok: 1, data });
 };
