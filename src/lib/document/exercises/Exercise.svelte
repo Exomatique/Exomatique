@@ -50,7 +50,7 @@
 		);
 
 		toaster.promise(
-			post('/exercise', {
+			post('/document', {
 				document_id,
 				url: 'index.json',
 				data,
@@ -78,7 +78,7 @@
 	let exercise = $state(undefined as ExerciseMeta | undefined);
 
 	onMount(() => {
-		get('/exercise', { document_id, url: 'index.json' })
+		get('/document', { document_id, url: 'index.json' })
 			.then((v) => {
 				if (v.authorId !== $user.id) {
 					onFetchFail();

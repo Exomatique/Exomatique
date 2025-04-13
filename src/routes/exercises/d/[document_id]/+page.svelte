@@ -18,7 +18,7 @@
 	let title = $state('');
 
 	onMount(() => {
-		get('/exercise', { document_id, url: 'index.json' })
+		get('/document', { document_id, url: 'index.json' })
 			.then((v) => {
 				exercise = v;
 				data = v.data;

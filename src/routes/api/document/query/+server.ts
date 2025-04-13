@@ -22,8 +22,12 @@ export const GET: RequestHandler = async (event) => {
 			skip,
 			take: size,
 			include: {
-				Exercise: true,
-				author: true
+				author: true,
+				DocumentTagOnDocument: {
+					include: {
+						tag: true
+					}
+				}
 			},
 			where: {
 				OR: [
@@ -50,7 +54,7 @@ export const GET: RequestHandler = async (event) => {
 			authorId: v.authorId,
 			author: v.author.name,
 			visibility: v.visibility,
-			type: v.Exercise ? 'Exercise' : 'Document',
+			tags: v.DocumentTagOnDocument.map((v) => v.tag.id),
 			id: v.id
 		};
 	});

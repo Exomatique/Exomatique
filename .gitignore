@@ -36,5 +36,3 @@ src/lib/paraglide
 
 # Remove datasource
 src/lib/server/schema/datasource.prisma
-
-src/lib/server/migrations

@@ -1,61 +1,55 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["prismaSchemaFolder"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
 }
 
 model User {
-    id           String     @id
-    name         String
-    passwordHash String
-    Session      Session[]
-    Document     Document[]
+  id           String     @id
+  name         String
+  passwordHash String
+  Session      Session[]
+  Document     Document[]
 }
 
 model Session {
-    id         String   @id
-    user       User     @relation(fields: [userId], references: [id])
-    userId     String
-    expiresAt  DateTime
-    persistent Boolean
+  id         String   @id
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  expiresAt  DateTime
+  persistent Boolean
 }
 
 model EditableLang {
-    id            String
-    lang          String
-    value         String
-    ExerciseTag   ExerciseTag? @relation(fields: [exerciseTagId], references: [id])
-    exerciseTagId String?
+  id            String
+  lang          String
+  value         String
+  DocumentTag   DocumentTag? @relation(fields: [DocumentTagId], references: [id])
+  DocumentTagId String?
 
-    @@id([id, lang])
+  @@id([id, lang])
 }
 
 model Document {
-    id         String    @id @default(uuid())
-    title      String    @default("Default Title")
-    authorId   String
-    author     User      @relation(fields: [authorId], references: [id])
-    Exercise   Exercise?
-    visibility Int       @default(-1)
+  id                    String                  @id @default(uuid())
+  title                 String                  @default("Default Title")
+  authorId              String
+  author                User                    @relation(fields: [authorId], references: [id])
+  visibility            Int                     @default(-1)
+  DocumentTagOnDocument DocumentTagOnDocument[]
 }
 
-model Exercise {
-    id                    String                  @id
-    document              Document                @relation(fields: [id], references: [id], onDelete: Cascade)
-    ExerciseTagOnExercise ExerciseTagOnExercise[]
+model DocumentTag {
+  id                    String                  @id
+  lang                  EditableLang[]
+  DocumentTagOnDocument DocumentTagOnDocument[]
 }
 
-model ExerciseTag {
-    id                    String                  @id
-    lang                  EditableLang[]
-    ExerciseTagOnExercise ExerciseTagOnExercise[]
-}
+model DocumentTagOnDocument {
+  id Int @id @default(autoincrement())
 
-model ExerciseTagOnExercise {
-    id Int @id @default(autoincrement())
+  Document   Document @relation(fields: [DocumentId], references: [id])
+  DocumentId String
 
-    exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-    exerciseId String
-
-    tag           ExerciseTag @relation(fields: [ExerciseTagId], references: [id])
-    ExerciseTagId String
+  tag           DocumentTag @relation(fields: [DocumentTagId], references: [id])
+  DocumentTagId String
 }

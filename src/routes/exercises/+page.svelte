@@ -22,7 +22,7 @@
 
 	async function onNewDocument() {
 		isCreating = true;
-		const obj = await post('/exercise/create').finally(() => (isCreating = false));
+		const obj = await post('/document/create').finally(() => (isCreating = false));
 		const id = obj.document.id;
 
 		goto('/exercises/d/' + id + '/edit');
@@ -33,7 +33,7 @@
 		exercises = undefined;
 		isSearching = true;
 
-		const v = await get('/exercise/query', { title: filterInput, tag: filterTags }).finally(
+		const v = await get('/document/query', { title: filterInput, tag: filterTags }).finally(
 			() => (isSearching = false)
 		);
 
