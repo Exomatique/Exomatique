@@ -6,6 +6,8 @@ export interface DocumentMeta {
 	author: string;
 	authorId: string;
 	visibility: DocumentVisibility;
+	created: Date;
+	updated: Date;
 	tags: string[];
 }
 

@@ -13,7 +13,15 @@
 
 	onMount(() => {
 		get('/document/query', { author: $user.id }).then((v) => {
-			data = v.data as any[];
+			data = (v.data as any[])
+				.map(
+					(v): DocumentMeta => ({
+						...v,
+						created: new Date(v.created),
+						updated: new Date(v.updated)
+					})
+				)
+				.sort((v1, v2) => v2.updated.getTime() - v1.updated.getTime());
 		});
 	});
 </script>
@@ -26,6 +34,8 @@
 					<th scope="col">Title</th>
 					<th scope="col">Id</th>
 					<th scope="col">Visibility</th>
+					<th scope="col">Created</th>
+					<th scope="col">Updated</th>
 					<th scope="col">Edit</th>
 					<th scope="col">View</th>
 				</tr>
@@ -39,6 +49,18 @@
 							<VisibilityBadge
 								value={mapNumberToVisiblity(Number.parseInt(document.visibility))}
 							/></td
+						>
+
+						<td
+							>{document.created.toLocaleDateString(undefined, {
+								hour: 'numeric'
+							})}</td
+						>
+
+						<td
+							>{document.updated.toLocaleDateString(undefined, {
+								hour: 'numeric'
+							})}</td
 						>
 
 						<td>

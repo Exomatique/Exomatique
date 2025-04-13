@@ -35,6 +35,8 @@ model Document {
   authorId              String
   author                User                    @relation(fields: [authorId], references: [id])
   visibility            Int                     @default(-1)
+  created DateTime @default(now())
+  updated DateTime @default(now()) @updatedAt
   DocumentTagOnDocument DocumentTagOnDocument[]
 }
 

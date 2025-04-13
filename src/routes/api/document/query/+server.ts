@@ -2,6 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
 import { json } from '@sveltejs/kit';
 import { prisma } from '$lib/server/client';
+import { updated } from '$app/state';
 
 export const GET: RequestHandler = async (event) => {
 	const token = event.cookies.get(auth.sessionCookieName);
@@ -55,6 +56,8 @@ export const GET: RequestHandler = async (event) => {
 			author: v.author.name,
 			visibility: v.visibility,
 			tags: v.DocumentTagOnDocument.map((v) => v.tag.id),
+			created: v.created,
+			updated: v.updated,
 			id: v.id
 		};
 	});

@@ -76,7 +76,10 @@ export const POST: RequestHandler = async (event) => {
 	const { document_id, url, data, title, tags, visibility } = await event.request.json();
 
 	await write(document_id, url, JSON.stringify(data));
-	await prisma.document.update({ where: { id: document_id }, data: { title, visibility } });
+	await prisma.document.update({
+		where: { id: document_id },
+		data: { title, visibility, updated: new Date() }
+	});
 
 	await prisma.documentTagOnDocument.deleteMany({ where: { DocumentId: document_id } });
 	for await (const tag of tags) {
