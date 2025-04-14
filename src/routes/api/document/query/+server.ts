@@ -58,6 +58,12 @@ export const GET: RequestHandler = async (event) => {
 			tags: v.DocumentTagOnDocument.map((v) => v.tag.id),
 			created: v.created,
 			updated: v.updated,
+			icon: v.icon
+				? JSON.parse(v.icon)
+				: {
+						library: 'lucide',
+						value: 'Image'
+					},
 			id: v.id
 		};
 	});

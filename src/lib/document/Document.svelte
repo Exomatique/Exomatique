@@ -3,7 +3,6 @@
 	import { onMount } from 'svelte';
 	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
-	import Combobox from '../../components/utils/Combobox.svelte';
 	import { Image, Trash } from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 
@@ -111,7 +110,7 @@
 	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
 	import IconPicker from '../../components/utils/IconPicker.svelte';
 	import type { IconMeta } from '$lib/types';
-	import DocumentIcon from '../../components/utils/DocumentIcon.svelte';
+	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
@@ -218,6 +217,7 @@
 										iconPopover = false;
 									}}
 									onQuit={() => (iconPopover = false)}
+									selected_icon={document?.icon}
 								/>
 							</article>
 						{/snippet}

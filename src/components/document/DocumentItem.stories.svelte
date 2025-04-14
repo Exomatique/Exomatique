@@ -19,7 +19,11 @@
 		title: 'This is a testing document object',
 		tags: ['logic', 'complexity'],
 		visibility: 'PUBLIC',
-		edit: false
+		edit: false,
+		icon: {
+			library: 'lucide',
+			value: 'Image'
+		}
 	}}
 />
 
@@ -34,7 +38,12 @@
 			'Text '.repeat(100),
 		tags: ['logic', 'complexity'],
 		visibility: 'PUBLIC',
-		edit: false
+		edit: false,
+		icon: {
+			library: 'lucide',
+			value: 'Image',
+			numbering: 10
+		}
 	}}
 />
 
@@ -50,7 +59,11 @@
 			.split(',')
 			.filter((v) => v.length > 0),
 		visibility: 'PUBLIC',
-		edit: false
+		edit: false,
+		icon: {
+			library: 'lucide',
+			value: 'Image'
+		}
 	}}
 />
 
@@ -68,6 +81,10 @@
 			.split(',')
 			.filter((v) => v.length > 0),
 		visibility: 'PUBLIC',
-		edit: false
+		edit: false,
+		icon: {
+			library: 'lucide',
+			value: 'Image'
+		}
 	}}
 />

@@ -5,6 +5,7 @@
 	import { languageTag, setLanguageTag } from '$lib/paraglide/runtime';
 	import VisibilityBadge from './VisibilityBadge.svelte';
 	import { href, type DocumentMeta } from '$lib/document';
+	import DocumentIcon from './DocumentIcon.svelte';
 
 	interface Props extends DocumentMeta {
 		edit?: boolean;
@@ -25,6 +26,8 @@
 <div
 	class="card bg-surface-800 border-surface-200 relative flex w-full flex-row gap-5 rounded-2xl border-2 p-5"
 >
+	<DocumentIcon icon={document.icon} size={96} backgroundColor={'surface-800'} />
+
 	<div class="flex-1">
 		<h1 class="h5 mb-5">{document.title}</h1>
 

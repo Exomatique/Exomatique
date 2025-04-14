@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { IconMeta } from '$lib/types';
 	import * as m from '$lib/paraglide/messages';
-	import DocumentIcon from './DocumentIcon.svelte';
+	import DocumentIcon from '../document/DocumentIcon.svelte';
 	import { onMount } from 'svelte';
 	import Loading from '../Loading.svelte';
 
@@ -10,7 +10,15 @@
 		key: string;
 	}
 
-	let { onSubmit, onQuit }: { onSubmit?: (v: IconMeta) => void; onQuit?: () => void } = $props();
+	let {
+		onSubmit,
+		onQuit,
+		selected_icon = $bindable(undefined)
+	}: {
+		onSubmit?: (v: IconMeta) => void;
+		onQuit?: () => void;
+		selected_icon?: IconMeta | undefined;
+	} = $props();
 
 	let loaded = $state(false);
 
@@ -39,8 +47,6 @@
 		if (input_timeout) clearTimeout(input_timeout);
 		input_timeout = setTimeout(() => updateFiltered(copy), 100);
 	});
-
-	let selected_icon: IconMeta | undefined = $state(undefined);
 </script>
 
 <div role="none" class="bg-surface-100 relative flex h-full w-full flex-row gap-1">
@@ -80,6 +86,7 @@
 
 				<input
 					type="checkbox"
+					checked={selected_icon.numbering !== undefined}
 					onchange={(e) => {
 						const checked = e.currentTarget.checked;
 						if (checked && selected_icon) selected_icon.numbering = 0;

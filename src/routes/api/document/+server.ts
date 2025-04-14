@@ -48,7 +48,12 @@ export const GET: RequestHandler = async (event) => {
 	let visibility = document.visibility;
 	let tags = document.DocumentTagOnDocument.map((v) => v.tag.id);
 	let id = document.id;
-	let icon = document.icon ? (JSON.parse(document.icon) as IconMeta) : undefined;
+	let icon = document.icon
+		? (JSON.parse(document.icon) as IconMeta)
+		: {
+				library: 'lucide',
+				value: 'Image'
+			};
 
 	return json({
 		ok: 1,

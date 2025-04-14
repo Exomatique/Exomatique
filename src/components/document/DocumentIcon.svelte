@@ -19,9 +19,12 @@
 		<div
 			class={'border-' +
 				backgroundColor +
-				' absolute right-0 bottom-0 flex h-10 w-10 items-center justify-center rounded-full border-4 bg-black p-1 font-bold text-white select-none'}
+				' absolute right-0 bottom-0 flex h-10 w-10 items-center justify-center rounded-full border-4 p-1 '}
+			style="background-color: currentColor;"
 		>
-			{icon.numbering}
+			<h5 class={'font-bold select-none'} style={'color: var(--color-' + backgroundColor + ');'}>
+				{icon.numbering}
+			</h5>
 		</div>
 	{/if}
 </div>

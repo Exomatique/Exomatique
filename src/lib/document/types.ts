@@ -1,3 +1,5 @@
+import type { IconMeta } from '$lib/types';
+
 export type DocumentVisibility = 'PUBLIC' | 'PROTECTED' | 'PRIVATE';
 
 export interface DocumentMeta {
@@ -8,6 +10,7 @@ export interface DocumentMeta {
 	visibility: DocumentVisibility;
 	created: Date;
 	updated: Date;
+	icon: IconMeta;
 	tags: string[];
 }
 
