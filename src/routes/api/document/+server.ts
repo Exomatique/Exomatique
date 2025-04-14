@@ -4,6 +4,7 @@ import { json } from '@sveltejs/kit';
 import { error } from '@sveltejs/kit';
 import { create, read, write } from '$lib/server/file';
 import { prisma } from '$lib/server/client';
+import type { IconMeta } from '$lib/types';
 
 export const GET: RequestHandler = async (event) => {
 	const document_id = event.url.searchParams.get('document_id');
@@ -47,6 +48,7 @@ export const GET: RequestHandler = async (event) => {
 	let visibility = document.visibility;
 	let tags = document.DocumentTagOnDocument.map((v) => v.tag.id);
 	let id = document.id;
+	let icon = document.icon ? (JSON.parse(document.icon) as IconMeta) : undefined;
 
 	return json({
 		ok: 1,
@@ -56,6 +58,7 @@ export const GET: RequestHandler = async (event) => {
 		authorId,
 		id,
 		tags,
+		icon,
 		visibility
 	});
 };
@@ -73,12 +76,12 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'account_needed_fail' });
 	}
 
-	const { document_id, url, data, title, tags, visibility } = await event.request.json();
+	const { document_id, url, data, title, tags, visibility, icon } = await event.request.json();
 
 	await write(document_id, url, JSON.stringify(data));
 	await prisma.document.update({
 		where: { id: document_id },
-		data: { title, visibility, updated: new Date() }
+		data: { title, visibility, icon: icon ? JSON.stringify(icon) : undefined, updated: new Date() }
 	});
 
 	await prisma.documentTagOnDocument.deleteMany({ where: { DocumentId: document_id } });

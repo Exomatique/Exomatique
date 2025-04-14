@@ -1,28 +1,38 @@
 <script lang="ts">
 	import type { IconMeta } from '$lib/types';
-	import * as lucide_icons from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages';
 	import DocumentIcon from './DocumentIcon.svelte';
+	import { onMount } from 'svelte';
+	import Loading from '../Loading.svelte';
 
 	interface ProvidedIcon {
 		Icon: any;
 		key: string;
 	}
 
-	let { onSubmit, onQuit = () => {} }: { onSubmit?: (v: IconMeta) => void; onQuit?: () => void } =
-		$props();
+	let { onSubmit, onQuit }: { onSubmit?: (v: IconMeta) => void; onQuit?: () => void } = $props();
 
-	const icons: ProvidedIcon[] = Object.keys(lucide_icons)
-		.map((v) => ({ Icon: (lucide_icons as any)[v], key: v }))
-		.filter((v, i) => typeof v.Icon === 'function');
+	let loaded = $state(false);
+
+	let lucide_icons: ProvidedIcon[] = $state([]);
 
 	let filter = $state('');
-	let filtered = $state(icons as ProvidedIcon[]);
+	let filtered = $state([] as ProvidedIcon[]);
 	let input_timeout: NodeJS.Timeout | undefined;
 
 	function updateFiltered(filtered_copy: string) {
-		filtered = icons.filter((v) => v.key.toLowerCase().includes(filtered_copy));
+		filtered = lucide_icons.filter((v) => v.key.toLowerCase().includes(filtered_copy));
 	}
+
+	onMount(async () => {
+		import('@lucide/svelte').then((loaded_lucide_icons) => {
+			lucide_icons = Object.keys(loaded_lucide_icons)
+				.map((v) => ({ Icon: (loaded_lucide_icons as any)[v], key: v }))
+				.filter((v, i) => typeof v.Icon === 'function');
+			updateFiltered(filter);
+			loaded = true;
+		});
+	});
 
 	$effect(() => {
 		const copy = filter;
@@ -37,22 +47,28 @@
 	<div class="bg-surface-200 max-h-80 flex-3/6 px-10">
 		<input class="input my-5 outline-none selection:outline-none" bind:value={filter} />
 
-		<div class="grid-ga h grid max-h-50 grid-cols-5 items-center gap-2 overflow-scroll">
-			{#each filtered as v}
-				<button
-					class="btn bg-surface-200 hover:bg-surface-400"
-					onclick={() => {
-						selected_icon = {
-							library: 'lucide',
-							value: v.key,
-							numbering: undefined
-						};
-					}}
-				>
-					<v.Icon size={48} color="black" /></button
-				>
-			{/each}
-		</div>
+		{#if loaded}
+			<div class="grid-ga h grid max-h-50 grid-cols-5 items-center gap-2 overflow-scroll">
+				{#each filtered as v}
+					<button
+						class="btn bg-surface-200 hover:bg-surface-400"
+						onclick={() => {
+							selected_icon = {
+								library: 'lucide',
+								value: v.key,
+								numbering: undefined
+							};
+						}}
+					>
+						<v.Icon size={48} color="black" /></button
+					>
+				{/each}
+			</div>
+		{:else}
+			<div class="my-5 flex w-full items-center justify-center">
+				<Loading size={'medium'} />
+			</div>
+		{/if}
 	</div>
 
 	{#if selected_icon}
@@ -100,12 +116,14 @@
 		</div>
 	{/if}
 
-	<button
-		class="btn btn-icon bg-error-300 absolute top-0 right-0 p-1"
-		onclick={() => {
-			if (onQuit) onQuit();
-		}}
-	>
-		+
-	</button>
+	{#if onQuit}
+		<button
+			class="btn btn-icon bg-error-300 absolute top-0 right-0 p-1"
+			onclick={() => {
+				if (onQuit) onQuit();
+			}}
+		>
+			+
+		</button>
+	{/if}
 </div>

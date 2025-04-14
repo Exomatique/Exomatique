@@ -4,7 +4,7 @@
 	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
 	import Combobox from '../../components/utils/Combobox.svelte';
-	import { Trash } from '@lucide/svelte';
+	import { Image, Trash } from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 
 	interface ComboboxData {
@@ -15,6 +15,7 @@
 	let tagsData: ComboboxData[] | undefined = $state(undefined);
 
 	let tags: string[] = $state([]);
+	let icon: IconMeta | undefined = $state();
 
 	let {
 		document_id,
@@ -56,6 +57,7 @@
 				data,
 				title,
 				tags,
+				icon,
 				visibility: Number.parseInt(visibility)
 			}).finally(() => (isSaving = false)),
 			{
@@ -89,6 +91,7 @@
 				data = v.data;
 				title = v.title;
 				tags = v.tags;
+				icon = v.icon;
 				visibility = String(v.visibility);
 			})
 			.catch(onFetchFail);
@@ -106,6 +109,9 @@
 	import type { ExoData } from '@exomatique_editor/base';
 	import Editor from './Editor.svelte';
 	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
+	import IconPicker from '../../components/utils/IconPicker.svelte';
+	import type { IconMeta } from '$lib/types';
+	import DocumentIcon from '../../components/utils/DocumentIcon.svelte';
 
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
@@ -137,6 +143,8 @@
 	function onChoice(choice_index: number) {
 		tags.push(filtered[choice_index].value);
 	}
+
+	let iconPopover = $state(false);
 </script>
 
 <Toaster {toaster}></Toaster>
@@ -186,76 +194,106 @@
 					<Trash color="red" />
 				</button>
 			</div>
-			<div class="flex w-full grow flex-wrap justify-start gap-1 px-5 py-2">
-				{#each (tagsData || []).filter((v) => tags.includes(v.value)) as tag}
-					<button
-						class="button btn-base chip preset-filled"
-						onclick={() => {
-							tags = tags.filter((v) => tag.value !== v);
-						}}>{tag.label} x</button
+			<div class="flex flex-row py-5">
+				<div class="h-fil mx-5 w-fit">
+					<Popover open={iconPopover}>
+						{#snippet trigger()}
+							<button onclick={() => (iconPopover = true)}>
+								<DocumentIcon
+									icon={icon || {
+										library: 'lucide',
+										value: 'Image'
+									}}
+									backgroundColor="white"
+									size={96}
+								/>
+							</button>
+						{/snippet}
+
+						{#snippet content()}
+							<article class="flex justify-between">
+								<IconPicker
+									onSubmit={(v) => {
+										icon = v;
+										iconPopover = false;
+									}}
+									onQuit={() => (iconPopover = false)}
+								/>
+							</article>
+						{/snippet}
+					</Popover>
+				</div>
+				<div class="flex w-full grow flex-wrap justify-start gap-1 px-5 py-2">
+					{#each (tagsData || []).filter((v) => tags.includes(v.value)) as tag}
+						<button
+							class="button btn-base chip preset-filled h-fit"
+							onclick={() => {
+								tags = tags.filter((v) => tag.value !== v);
+							}}>{tag.label} x</button
+						>
+					{/each}
+
+					<Popover
+						positioning={{ placement: 'top' }}
+						triggerBase="hover:bg-surface-100 ignore-focus px-2 rounded-lg btn-base"
+						contentBase="scheme-light text-neutral-950 flex flex-col relative rounded-lg border-2 border-surface-300 bg-surface-50 p-2"
+						arrow
+						arrowBackground="!bg-surface-200 dark:!bg-surface-800"
 					>
-				{/each}
+						{#snippet trigger()}
+							<i class="fa-solid fa-plus"></i>
+						{/snippet}
 
-				<Popover
-					positioning={{ placement: 'top' }}
-					triggerBase="hover:bg-surface-100 ignore-focus px-2 rounded-lg btn-base"
-					contentBase="scheme-light text-neutral-950 flex flex-col relative rounded-lg border-2 border-surface-300 bg-surface-50 p-2"
-					arrow
-					arrowBackground="!bg-surface-200 dark:!bg-surface-800"
-				>
-					{#snippet trigger()}
-						<i class="fa-solid fa-plus"></i>
-					{/snippet}
+						{#snippet content()}
+							<div
+								role="none"
+								class="bg-surface-100 m-2 flex flex-row items-center rounded-lg p-1"
+								onkeydown={(e) => {
+									if (e.key === 'ArrowUp') {
+										tag_select = Math.max(tag_select - 1, 0);
+										tagContainer?.children[tag_select].scrollIntoView(false);
+									} else if (e.key === 'ArrowDown') {
+										tag_select = Math.min(tag_select + 1, filtered.length - 1);
+										tagContainer?.children[tag_select].scrollIntoView(false);
+									} else if (e.key === 'Enter' || e.key === 'Space') {
+										onChoice(tag_select);
+									}
+								}}
+							>
+								<i class="fa-solid fa-magnifying-glass mx-2"></i>
+								<input
+									bind:this={inputEl}
+									class="bg-surface-100 outline-none"
+									bind:value={filterTag}
+									onchange={() => (tag_select = -1)}
+								/>
+							</div>
 
-					{#snippet content()}
-						<div
-							role="none"
-							class="bg-surface-100 m-2 flex flex-row items-center rounded-lg p-1"
-							onkeydown={(e) => {
-								if (e.key === 'ArrowUp') {
-									tag_select = Math.max(tag_select - 1, 0);
-									tagContainer?.children[tag_select].scrollIntoView(false);
-								} else if (e.key === 'ArrowDown') {
-									tag_select = Math.min(tag_select + 1, filtered.length - 1);
-									tagContainer?.children[tag_select].scrollIntoView(false);
-								} else if (e.key === 'Enter' || e.key === 'Space') {
-									onChoice(tag_select);
-								}
-							}}
-						>
-							<i class="fa-solid fa-magnifying-glass mx-2"></i>
-							<input
-								bind:this={inputEl}
-								class="bg-surface-100 outline-none"
-								bind:value={filterTag}
-								onchange={() => (tag_select = -1)}
-							/>
-						</div>
-
-						<div
-							bind:this={tagContainer}
-							class="ignore-focus flex max-h-40 flex-1 flex-col overflow-scroll"
-						>
-							{#each filtered.map((v, i) => ({ index: i, value: v.label })) as { index, value: k }}
-								<button
-									class="hover:bg-surface-100 m-1 flex flex-1 flex-row items-center gap-5 rounded-lg px-4"
-									class:bg-surface-100={tag_select === index}
-									onclick={() => {
-										onChoice(index);
-									}}
-									onmouseenter={() => {
-										tag_select = index;
-									}}
-									onmouseleave={() => {
-										tag_select = -1;
-									}}
-								>
-									{k}
-								</button>
-							{/each}
-						</div>
-					{/snippet}
-				</Popover>
+							<div
+								bind:this={tagContainer}
+								class="ignore-focus flex max-h-40 flex-1 flex-col overflow-scroll"
+							>
+								{#each filtered.map( (v, i) => ({ index: i, value: v.label }) ) as { index, value: k }}
+									<button
+										class="hover:bg-surface-100 m-1 flex flex-1 flex-row items-center gap-5 rounded-lg px-4"
+										class:bg-surface-100={tag_select === index}
+										onclick={() => {
+											onChoice(index);
+										}}
+										onmouseenter={() => {
+											tag_select = index;
+										}}
+										onmouseleave={() => {
+											tag_select = -1;
+										}}
+									>
+										{k}
+									</button>
+								{/each}
+							</div>
+						{/snippet}
+					</Popover>
+				</div>
 			</div>
 		</div>
 	{/if}
