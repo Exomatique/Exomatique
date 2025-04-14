@@ -5,6 +5,17 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { Image, Trash } from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
+	import { Popover } from '@skeletonlabs/skeleton-svelte';
+	import IconX from '@lucide/svelte/icons/x';
+	import { goto } from '$app/navigation';
+	import { href, mapNumberToVisiblity, type DocumentMeta } from './types';
+	import { user } from '../../store';
+	import type { ExoData } from '@exomatique_editor/base';
+	import Editor from './Editor.svelte';
+	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
+	import IconPicker from '../../components/utils/IconPicker.svelte';
+	import type { IconMeta } from '$lib/types';
+	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
 
 	interface ComboboxData {
 		label: string;
@@ -32,7 +43,24 @@
 	let isSaving = $state(false);
 	let lastSaved = $state(new Date().getTime());
 
-	async function save() {
+	let saveTimeout: NodeJS.Timeout | undefined;
+
+	$effect(() => {
+		let post_data = {
+			document_id,
+			url: 'index.json',
+			data,
+			title,
+			tags,
+			icon,
+			visibility: Number.parseInt(visibility)
+		};
+		// Use post_data to prevent editor error
+		if (saveTimeout && post_data) clearTimeout(saveTimeout);
+		saveTimeout = setTimeout(() => save(true), 30000);
+	});
+
+	async function save(autosave?: boolean) {
 		lastSaved = new Date().getTime();
 		isSaving = true;
 
@@ -42,7 +70,9 @@
 			saving: undefined,
 			saving_description: undefined,
 			saved_description: undefined,
-			save_fail_description: undefined
+			save_fail_description: undefined,
+			auto_saving_description: undefined,
+			auto_saved_description: undefined
 		};
 
 		await Promise.all(Object.keys(langs).map(async (v, i) => [v, (await lang(v)) || v])).then(
@@ -62,11 +92,11 @@
 			{
 				loading: {
 					title: langs.saving,
-					description: langs.saving_description
+					description: autosave ? langs.auto_saving_description : langs.saving_description
 				},
 				success: () => ({
 					title: langs.saved,
-					description: langs.saved_description
+					description: autosave ? langs.auto_saved_description : langs.saved_description
 				}),
 				error: () => ({
 					title: langs.save_fail,
@@ -100,18 +130,6 @@
 		});
 	});
 
-	import { Popover } from '@skeletonlabs/skeleton-svelte';
-	import IconX from '@lucide/svelte/icons/x';
-	import { goto } from '$app/navigation';
-	import { href, mapNumberToVisiblity, type DocumentMeta } from './types';
-	import { user } from '../../store';
-	import type { ExoData } from '@exomatique_editor/base';
-	import Editor from './Editor.svelte';
-	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
-	import IconPicker from '../../components/utils/IconPicker.svelte';
-	import type { IconMeta } from '$lib/types';
-	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
-
 	let deletePopoverState = $state(false);
 	let deletionConfirmText = $state('');
 
@@ -125,12 +143,10 @@
 		await post('/document/delete', { document_id }).finally(() => goto('/documents'));
 	}
 
-	let container: HTMLElement | undefined = $state(undefined);
 	const toaster = createToaster({ placement: 'bottom-end' });
 
 	let tagContainer: HTMLElement | undefined = $state(undefined);
 	let tag_select = $state(0);
-	let inputEl: HTMLInputElement | undefined = $state(undefined);
 	let filterTag = $state('');
 
 	let filtered = $derived(
@@ -177,13 +193,13 @@
 						class="btn bg-surface-200 hover:bg-surface-400 self-end"
 						href={href(document)}
 						class:disabled={isSaving}
-						onclick={save}>View</a
+						onclick={() => save()}>View</a
 					>
 				{/if}
 				<button
 					class="btn bg-surface-200 hover:bg-surface-400 self-end"
 					class:disabled={isSaving}
-					onclick={save}>Save</button
+					onclick={() => save()}>Save</button
 				>
 
 				<button
@@ -262,7 +278,6 @@
 							>
 								<i class="fa-solid fa-magnifying-glass mx-2"></i>
 								<input
-									bind:this={inputEl}
 									class="bg-surface-100 outline-none"
 									bind:value={filterTag}
 									onchange={() => (tag_select = -1)}

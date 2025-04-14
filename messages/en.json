@@ -47,7 +47,9 @@
 	"saved": "Saved",
 	"saving": "Saving ...",
 	"saving_description": "Currently saving ...",
+	"auto_saving_description": "Currently auto saving ...",
 	"saved_description": "Saving was done successfully",
+	"auto_saved_description": "Auto Saving was done successfully",
 	"save_fail_description": "Saving failed",
 	"your_documents": "Your documents",
 	"numbering": "Numbering :"
