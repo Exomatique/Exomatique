@@ -49,5 +49,6 @@
 	"saving_description": "Currently saving ...",
 	"saved_description": "Saving was done successfully",
 	"save_fail_description": "Saving failed",
-	"your_documents": "Your documents"
+	"your_documents": "Your documents",
+	"numbering": "Numbering :"
 }

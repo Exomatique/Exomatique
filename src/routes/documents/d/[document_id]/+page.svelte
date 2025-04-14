@@ -17,8 +17,6 @@
 	let data: ExoData | undefined = $state(undefined);
 	let title = $state('');
 
-	console.log('hello');
-
 	onMount(() => {
 		get('/document', { document_id, url: 'index.json' })
 			.then((v) => {

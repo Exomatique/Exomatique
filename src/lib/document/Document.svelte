@@ -136,7 +136,6 @@
 
 	function onChoice(choice_index: number) {
 		tags.push(filtered[choice_index].value);
-		console.log(tags);
 	}
 </script>
 

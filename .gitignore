@@ -2,7 +2,6 @@ node_modules
 
 # Code editor
 .vscode
-.storybook
 *storybook.log
 
 
