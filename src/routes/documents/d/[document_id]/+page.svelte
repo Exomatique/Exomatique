@@ -21,7 +21,7 @@
 		get('/document', { document_id, url: 'index.json' })
 			.then((v) => {
 				document = v;
-				data = v.data;
+				data = JSON.parse(v.data || '[]');
 				title = v.title;
 			})
 			.catch((e) => {

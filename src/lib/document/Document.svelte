@@ -38,6 +38,7 @@
 	let params_open = $state(false);
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
+	let tree: any | undefined = $state(undefined);
 	let title: string | undefined = $state('');
 
 	let isSaving = $state(false);
@@ -82,8 +83,12 @@
 		toaster.promise(
 			post('/document', {
 				document_id,
-				url: 'index.json',
-				data,
+				data: [
+					{
+						url: 'index.json',
+						data: JSON.stringify(data)
+					}
+				],
 				title,
 				tags,
 				icon,
@@ -109,7 +114,7 @@
 	let document = $state(undefined as DocumentMeta | undefined);
 
 	onMount(() => {
-		get('/document', { document_id, url: 'index.json' })
+		get('/document', { document_id, url: ['index.json', 'tree.json'] })
 			.then((v) => {
 				if (v.authorId !== $user.id) {
 					onFetchFail();
@@ -117,7 +122,12 @@
 				}
 
 				document = v;
-				data = v.data;
+				data = JSON.parse(
+					(v.data as any).filter((v: any) => v.url === 'index.json')[0]?.data || '[]'
+				);
+				tree = JSON.parse(
+					(v.data as any).filter((v: any) => v.url === 'tree.json')[0]?.data || '{}'
+				);
 				title = v.title;
 				tags = v.tags;
 				icon = v.icon;
@@ -326,6 +336,11 @@
 			</div>
 		{/if}
 	</div>
+	{#if data}
+		<div class="my-5 flex w-3/4 justify-end">
+			<button class="btn btn-base bg-surface-800">Turn to document graph</button>
+		</div>
+	{/if}
 </div>
 
 {#if deletePopoverState}

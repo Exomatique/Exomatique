@@ -40,7 +40,14 @@ export const GET: RequestHandler = async (event) => {
 		}
 	}
 
-	const data = JSON.parse((await read(document_id, url)) || '[]');
+	const data = !url.includes(',')
+		? await read(document_id, url)
+		: await Promise.all(
+				url.split(',').map(async (v) => ({
+					url: v,
+					data: await read(document_id, v)
+				}))
+			);
 
 	let title = document.title;
 	let authorId = document.authorId;
@@ -81,9 +88,14 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'account_needed_fail' });
 	}
 
-	const { document_id, url, data, title, tags, visibility, icon } = await event.request.json();
+	const { document_id, data, title, tags, visibility, icon } = await event.request.json();
 
-	await write(document_id, url, JSON.stringify(data));
+	await Promise.all(
+		(data as { url: string; data: string }[]).map(
+			async ({ url, data }) => await write(document_id, url, data)
+		)
+	);
+
 	await prisma.document.update({
 		where: { id: document_id },
 		data: { title, visibility, icon: icon ? JSON.stringify(icon) : undefined, updated: new Date() }
