@@ -11,11 +11,16 @@ export interface DocumentMeta {
 	created: Date;
 	updated: Date;
 	icon: IconMeta;
+	tree: boolean;
 	tags: string[];
 }
 
 export function href(document: DocumentMeta, edit?: boolean) {
 	return '/documents/d/' + document.id + (edit ? '/edit' : '');
+}
+
+export function hrefTree(document: DocumentMeta, edit?: boolean) {
+	return '/documents/tree/' + document.id + (edit ? '/edit' : '');
 }
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {

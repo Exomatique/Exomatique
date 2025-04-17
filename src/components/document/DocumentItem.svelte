@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { lang } from '$lib/utils';
-	import { Eye, Pen } from '@lucide/svelte';
+	import { Eye, Network, Pen } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { languageTag, setLanguageTag } from '$lib/paraglide/runtime';
 	import VisibilityBadge from './VisibilityBadge.svelte';
-	import { href, type DocumentMeta } from '$lib/document';
+	import { href, hrefTree, type DocumentMeta } from '$lib/document';
 	import DocumentIcon from './DocumentIcon.svelte';
 
 	interface Props extends DocumentMeta {
@@ -41,23 +41,44 @@
 
 	<div class="flex flex-col">
 		{#if edit}
-			<a
-				class="btn bg-surface-700 border-surface-500 self-start border-1"
-				href={href(document, edit)}
-				target="_blank"
-			>
-				<Pen />
-			</a>
-		{/if}
+			<div class="flex-end flex w-full gap-5">
+				{#if document.tree}
+					<a
+						class="btn bg-surface-700 border-surface-500 self-end border-1"
+						href={hrefTree(document)}
+						target="_blank"
+					>
+						<Network />
+					</a>
+				{/if}
+				<a
+					class="btn bg-surface-700 border-surface-500 self-end border-1"
+					href={href(document)}
+					target="_blank"
+				>
+					<Eye />
+				</a>
+			</div>
 
-		<div class="flex-1"></div>
-
-		<a
-			class="btn bg-surface-700 border-surface-500 self-end border-1"
-			href={href(document)}
-			target="_blank"
-		>
-			<Eye />
-		</a>
+			<div class="flex-1"></div>
+			<div class="flex-end flex w-full gap-5">
+				{#if document.tree}
+					<a
+						class="btn bg-surface-700 border-surface-500 self-end border-1"
+						href={hrefTree(document, true)}
+						target="_blank"
+					>
+						<Network />
+					</a>
+				{/if}
+				<a
+					class="btn bg-surface-700 border-surface-500 self-end border-1"
+					href={href(document, true)}
+					target="_blank"
+				>
+					<Pen />
+				</a>
+			</div>
+		{:else}{/if}
 	</div>
 </div>

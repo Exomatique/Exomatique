@@ -71,8 +71,11 @@
 		"@prisma/client": "^6.5.0",
 		"@storybook/addon-themes": "^8.6.2",
 		"@sveltejs/adapter-node": "^5.2.12",
+		"@types/animejs": "^3.1.13",
 		"@types/ssh2-sftp-client": "^9.0.4",
 		"@zag-js/svelte": "^1.4.0",
+		"animejs": "^4.0.1",
+		"panzoom": "^9.4.3",
 		"ssh2-sftp-client": "^11.0.0"
 	}
 }

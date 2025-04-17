@@ -61,6 +61,7 @@ export const GET: RequestHandler = async (event) => {
 				library: 'lucide',
 				value: 'Image'
 			};
+	let tree = document.tree;
 
 	return json({
 		ok: 1,
@@ -71,7 +72,8 @@ export const GET: RequestHandler = async (event) => {
 		id,
 		tags,
 		icon,
-		visibility
+		visibility,
+		tree
 	});
 };
 
@@ -88,7 +90,7 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'account_needed_fail' });
 	}
 
-	const { document_id, data, title, tags, visibility, icon } = await event.request.json();
+	const { document_id, data, title, tags, visibility, icon, tree } = await event.request.json();
 
 	await Promise.all(
 		(data as { url: string; data: string }[]).map(
@@ -98,7 +100,13 @@ export const POST: RequestHandler = async (event) => {
 
 	await prisma.document.update({
 		where: { id: document_id },
-		data: { title, visibility, icon: icon ? JSON.stringify(icon) : undefined, updated: new Date() }
+		data: {
+			title,
+			visibility,
+			icon: icon ? JSON.stringify(icon) : undefined,
+			updated: new Date(),
+			tree
+		}
 	});
 
 	await prisma.documentTagOnDocument.deleteMany({ where: { DocumentId: document_id } });

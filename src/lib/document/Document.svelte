@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
-	import { Image, Trash } from '@lucide/svelte';
+	import { Image, Network, Trash, Trees } from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
@@ -38,7 +38,7 @@
 	let params_open = $state(false);
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
-	let tree: any | undefined = $state(undefined);
+	let tree: boolean | undefined = $state(undefined);
 	let title: string | undefined = $state('');
 
 	let isSaving = $state(false);
@@ -54,6 +54,7 @@
 			title,
 			tags,
 			icon,
+			tree,
 			visibility: Number.parseInt(visibility)
 		};
 		// Use post_data to prevent editor error
@@ -92,6 +93,7 @@
 				title,
 				tags,
 				icon,
+				tree,
 				visibility: Number.parseInt(visibility)
 			}).finally(() => (isSaving = false)),
 			{
@@ -114,7 +116,7 @@
 	let document = $state(undefined as DocumentMeta | undefined);
 
 	onMount(() => {
-		get('/document', { document_id, url: ['index.json', 'tree.json'] })
+		get('/document', { document_id, url: ['index.json'] })
 			.then((v) => {
 				if (v.authorId !== $user.id) {
 					onFetchFail();
@@ -122,12 +124,8 @@
 				}
 
 				document = v;
-				data = JSON.parse(
-					(v.data as any).filter((v: any) => v.url === 'index.json')[0]?.data || '[]'
-				);
-				tree = JSON.parse(
-					(v.data as any).filter((v: any) => v.url === 'tree.json')[0]?.data || '{}'
-				);
+				data = JSON.parse(v.data || '[]');
+				tree = v.tree;
 				title = v.title;
 				tags = v.tags;
 				icon = v.icon;
@@ -338,7 +336,10 @@
 	</div>
 	{#if data}
 		<div class="my-5 flex w-3/4 justify-end">
-			<button class="btn btn-base bg-surface-800">Turn to document graph</button>
+			<label for="network_knowledge" class="mx-5 flex flex-nowrap items-center gap-5 text-nowrap">
+				Knowledge Network <Network />
+			</label>
+			<input id="network_knowledge" type="checkbox" defaultchecked={tree} bind:checked={tree} />
 		</div>
 	{/if}
 </div>

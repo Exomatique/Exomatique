@@ -38,6 +38,7 @@ model Document {
   visibility            Int                     @default(-1)
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
+  tree Boolean @default(false)
   DocumentTagOnDocument DocumentTagOnDocument[]
 }
 
