@@ -21,9 +21,8 @@
 	onMount(() => {
 		get('/document', { document_id, url })
 			.then((v) => {
-				document = { ...v, url };
+				document = v.meta as DocumentMeta;
 				data = JSON.parse(v.data || '[]');
-				title = v.title;
 			})
 			.catch((e) => {
 				goto('/documents/error');

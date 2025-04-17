@@ -85,18 +85,15 @@
 
 		toaster.promise(
 			post('/document', {
-				document_id,
-				data: [
-					{
-						url,
-						data: JSON.stringify(data)
-					}
-				],
-				title,
-				tags,
-				icon,
-				tree,
-				visibility: Number.parseInt(visibility)
+				meta: {
+					...document,
+					title,
+					tags,
+					icon,
+					tree,
+					visibility: Number.parseInt(visibility)
+				},
+				data: JSON.stringify(data)
 			}).finally(() => (isSaving = false)),
 			{
 				loading: {
@@ -120,18 +117,19 @@
 	onMount(() => {
 		get('/document', { document_id, url })
 			.then((v) => {
-				if (v.authorId !== $user.id) {
+				if (v.meta.authorId !== $user.id) {
 					onFetchFail();
 					return;
 				}
 
-				document = v;
+				document = v.meta as DocumentMeta;
+				tree = document.tree;
+				title = document.title;
+				tags = document.tags;
+				icon = document.icon;
+				visibility = document.visibility;
+
 				data = JSON.parse(v.data || '[]');
-				tree = v.tree;
-				title = v.title;
-				tags = v.tags;
-				icon = v.icon;
-				visibility = String(v.visibility);
 			})
 			.catch(onFetchFail);
 
