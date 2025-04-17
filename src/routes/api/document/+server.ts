@@ -40,14 +40,7 @@ export const GET: RequestHandler = async (event) => {
 		}
 	}
 
-	const data = !url.includes(',')
-		? await read(document_id, url)
-		: await Promise.all(
-				url.split(',').map(async (v) => ({
-					url: v,
-					data: await read(document_id, v)
-				}))
-			);
+	const data = await read(document_id, url);
 
 	let title = document.title;
 	let authorId = document.authorId;
