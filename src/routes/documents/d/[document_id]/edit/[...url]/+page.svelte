@@ -5,6 +5,7 @@
 	/** @type {import('./$types').PageProps} */
 	let { data } = $props();
 	let document_id = data.document_id;
+	let url = data.url;
 </script>
 
-<Document {document_id} onFetchFail={() => goto('/documents/error', { state: 404 })} />
+<Document {url} {document_id} onFetchFail={() => goto('/documents/error', { state: 404 })} />

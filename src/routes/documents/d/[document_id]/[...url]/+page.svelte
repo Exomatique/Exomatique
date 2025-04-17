@@ -4,23 +4,24 @@
 	import Document from '$lib/document/Document.svelte';
 	import { get } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import Loading from '../../../../components/Loading.svelte';
+	import Loading from '../../../../../components/Loading.svelte';
 	import { href, type DocumentMeta } from '$lib/document';
-	import { user } from '../../../../store';
+	import { user } from '../../../../../store';
 	import type { ExoData } from '@exomatique_editor/base';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();
 	let document_id = fetch.document_id;
+	let url = fetch.url;
 
 	let document: DocumentMeta | undefined = $state(undefined);
 	let data: ExoData | undefined = $state(undefined);
 	let title = $state('');
 
 	onMount(() => {
-		get('/document', { document_id, url: 'index.json' })
+		get('/document', { document_id, url })
 			.then((v) => {
-				document = v;
+				document = { ...v, url };
 				data = JSON.parse(v.data || '[]');
 				title = v.title;
 			})

@@ -29,8 +29,10 @@
 
 	let {
 		document_id,
-		onFetchFail = () => {}
+		onFetchFail = () => {},
+		url
 	}: {
+		url: string;
 		document_id: string;
 		onFetchFail?: () => void;
 	} = $props();
@@ -49,7 +51,7 @@
 	$effect(() => {
 		let post_data = {
 			document_id,
-			url: 'index.json',
+			url,
 			data,
 			title,
 			tags,
@@ -86,7 +88,7 @@
 				document_id,
 				data: [
 					{
-						url: 'index.json',
+						url,
 						data: JSON.stringify(data)
 					}
 				],
@@ -116,7 +118,7 @@
 	let document = $state(undefined as DocumentMeta | undefined);
 
 	onMount(() => {
-		get('/document', { document_id, url: ['index.json'] })
+		get('/document', { document_id, url })
 			.then((v) => {
 				if (v.authorId !== $user.id) {
 					onFetchFail();

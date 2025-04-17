@@ -17,6 +17,7 @@
 				.map(
 					(v): DocumentMeta => ({
 						...v,
+						url: 'index.json',
 						created: new Date(v.created),
 						updated: new Date(v.updated)
 					})
