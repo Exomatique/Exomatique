@@ -16,8 +16,14 @@ export interface DocumentMeta {
 	tags: string[];
 }
 
+export const default_icon: IconMeta = {
+	library: 'lucide',
+	value: 'Image',
+	numbering: 10
+};
+
 export function href(document: DocumentMeta, edit?: boolean) {
-	return '/documents/d/' + document.id + (edit ? '/edit' : '');
+	return '/documents/d/' + document.id + (edit ? '/edit/' : '/') + document.url;
 }
 
 export function hrefTree(document: DocumentMeta, edit?: boolean) {
@@ -27,15 +33,15 @@ export function hrefTree(document: DocumentMeta, edit?: boolean) {
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {
 	switch (visibility) {
 		case 'PUBLIC':
-			1;
+			return 1;
 		case 'PROTECTED':
-			0;
-		case 'PRIVATE':
-			-1;
+			return 0;
+		default:
+			return -1;
 	}
 }
 
-export function mapNumberToVisiblity(visibility: number) {
+export function mapNumberToVisiblity(visibility: number): DocumentVisibility {
 	if (visibility === 1) {
 		return 'PUBLIC';
 	} else if (visibility === 0) {

@@ -12,11 +12,24 @@ import {
 	type DocumentMeta
 } from '$lib/document';
 
+function simplify_url(url: string): string {
+	url = resolve_url(url);
+	const file_no_extension = url.includes('.') ? url.substring(0, url.lastIndexOf('.')) : url;
+
+	return url === 'index.json' ? '' : url.endsWith('.json') ? file_no_extension : url;
+}
+
+function resolve_url(url: string): string {
+	if (url.trim().length === 0) return 'index.json';
+	if (url.includes('.')) return url;
+	return url + '.json';
+}
+
 export const GET: RequestHandler = async (event) => {
 	const document_id = event.url.searchParams.get('document_id');
 	const url = event.url.searchParams.get('url');
 
-	if (!document_id || !url) {
+	if (!document_id || url == undefined) {
 		error(400, { message: 'missing_required_params_fail' });
 	}
 
@@ -82,8 +95,15 @@ export const GET: RequestHandler = async (event) => {
 		created
 	};
 
-	if (url === 'index.json') {
-		const data = await read(document_id, url);
+	const resolved = resolve_url(meta.url);
+	const simplified_url = simplify_url(resolved);
+
+	const file_no_extension = resolved.includes('.')
+		? resolved.substring(0, resolved.lastIndexOf('.'))
+		: resolved;
+
+	if (resolved === 'index.json') {
+		const data = await read(document_id, resolved);
 
 		return json({
 			ok: 1,
@@ -94,7 +114,6 @@ export const GET: RequestHandler = async (event) => {
 
 	// Check whether url have a document meta
 
-	const file_no_extension = url.includes('.') ? url.substring(0, url.lastIndexOf('.')) : url;
 	const meta_file = file_no_extension + '.meta.json';
 
 	meta = await read(document_id, meta_file).then((v) =>
@@ -117,11 +136,11 @@ export const GET: RequestHandler = async (event) => {
 		}
 	}
 
-	const data = await read(document_id, url);
+	const data = await read(document_id, resolved);
 
 	return json({
 		ok: 1,
-		meta,
+		meta: { ...meta, url: simplified_url },
 		data
 	});
 };
@@ -139,7 +158,15 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'account_needed_fail' });
 	}
 
-	const { meta, data }: { meta: DocumentMeta; data: string } = await event.request.json();
+	let { meta, data }: { meta: DocumentMeta; data: string } = await event.request.json();
+
+	const resolved = resolve_url(meta.url);
+
+	const file_no_extension = resolved.includes('.')
+		? resolved.substring(0, resolved.lastIndexOf('.'))
+		: resolved;
+
+	const simplified_url = simplify_url(resolved);
 
 	const canWrite =
 		(await prisma.document.findFirst({ where: { id: meta.id } }).then((v) => v?.authorId)) ===
@@ -149,8 +176,8 @@ export const POST: RequestHandler = async (event) => {
 		error(400, { message: 'document_exist_fail' });
 	}
 
-	if (meta.url === 'index.json') {
-		await write(meta.id, meta.url, data);
+	if (resolved === 'index.json') {
+		await write(meta.id, resolved, data);
 
 		await prisma.document.update({
 			where: { id: meta.id },
@@ -173,19 +200,16 @@ export const POST: RequestHandler = async (event) => {
 			)
 		);
 
-		return json({ ok: 1, data, meta });
+		return json({ ok: 1, data, meta: { ...meta, url: simplified_url } });
 	}
 
-	const file_no_extension = meta.url.includes('.')
-		? meta.url.substring(0, meta.url.lastIndexOf('.'))
-		: meta.url;
 	const meta_file = file_no_extension + '.meta.json';
 
 	let ancient_meta: DocumentMeta = await read(meta.id, meta_file).then((v) =>
 		!v || v?.length === 0
 			? ({
 					title: '',
-					url: meta.url,
+					url: file_no_extension,
 					author: meta.author,
 					authorId: meta.authorId,
 					id: meta.id,
@@ -209,8 +233,8 @@ export const POST: RequestHandler = async (event) => {
 		tags: meta.tags
 	};
 
-	await write(meta.id, meta.url, data);
+	await write(meta.id, resolved, data);
 	await write(meta.id, meta_file, JSON.stringify(new_meta));
 
-	return json({ ok: 1, data, meta: new_meta });
+	return json({ ok: 1, data, meta: { ...new_meta, url: simplified_url } });
 };
