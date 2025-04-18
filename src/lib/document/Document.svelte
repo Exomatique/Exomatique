@@ -16,6 +16,7 @@
 	import IconPicker from '../../components/utils/IconPicker.svelte';
 	import type { IconMeta } from '$lib/types';
 	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
+	import { updated } from '$app/state';
 
 	interface ComboboxData {
 		label: string;
@@ -47,6 +48,7 @@
 
 	let saveTimeout: NodeJS.Timeout | undefined;
 
+	let lastSavedRaw = JSON.stringify({});
 	$effect(() => {
 		let post_data = {
 			document_id,
@@ -59,10 +61,27 @@
 		};
 		// Use post_data to prevent editor error
 		if (saveTimeout && post_data) clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(() => save(true), 30000);
+		saveTimeout = setTimeout(() => save(true), 5000);
 	});
 
 	async function save(autosave?: boolean) {
+		const toBeSaved = {
+			...document,
+			title,
+			tags,
+			icon,
+			visibility: Number.parseInt(visibility)
+		};
+
+		const trimmedToBeSaved = {
+			...toBeSaved,
+			updated: undefined,
+			data: JSON.stringify(data)
+		};
+
+		if (JSON.stringify(trimmedToBeSaved) === lastSavedRaw) return;
+		lastSavedRaw = JSON.stringify(trimmedToBeSaved);
+
 		lastSaved = new Date().getTime();
 		isSaving = true;
 
@@ -83,13 +102,7 @@
 
 		toaster.promise(
 			post('/document', {
-				meta: {
-					...document,
-					title,
-					tags,
-					icon,
-					visibility: Number.parseInt(visibility)
-				},
+				meta: toBeSaved,
 				data: JSON.stringify(data)
 			}).finally(() => (isSaving = false)),
 			{
@@ -126,6 +139,17 @@
 				visibility = document.visibility;
 
 				data = JSON.parse(v.data || '[]');
+				const trimmedToBeSaved = {
+					...document,
+					title,
+					tags,
+					icon,
+					visibility: Number.parseInt(visibility),
+					updated: undefined,
+					data: JSON.stringify(data)
+				};
+
+				lastSavedRaw = JSON.stringify(trimmedToBeSaved);
 			})
 			.catch(onFetchFail);
 
