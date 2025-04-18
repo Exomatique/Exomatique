@@ -40,7 +40,6 @@
 	let params_open = $state(false);
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
-	let tree: boolean | undefined = $state(undefined);
 	let title: string | undefined = $state('');
 
 	let isSaving = $state(false);
@@ -56,7 +55,6 @@
 			title,
 			tags,
 			icon,
-			tree,
 			visibility: Number.parseInt(visibility)
 		};
 		// Use post_data to prevent editor error
@@ -90,7 +88,6 @@
 					title,
 					tags,
 					icon,
-					tree,
 					visibility: Number.parseInt(visibility)
 				},
 				data: JSON.stringify(data)
@@ -123,7 +120,6 @@
 				}
 
 				document = v.meta as DocumentMeta;
-				tree = document.tree;
 				title = document.title;
 				tags = document.tags;
 				icon = document.icon;
@@ -334,14 +330,6 @@
 			</div>
 		{/if}
 	</div>
-	{#if data}
-		<div class="my-5 flex w-3/4 justify-end">
-			<label for="network_knowledge" class="mx-5 flex flex-nowrap items-center gap-5 text-nowrap">
-				Knowledge Network <Network />
-			</label>
-			<input id="network_knowledge" type="checkbox" defaultchecked={tree} bind:checked={tree} />
-		</div>
-	{/if}
 </div>
 
 {#if deletePopoverState}

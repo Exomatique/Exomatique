@@ -79,7 +79,6 @@ export const GET: RequestHandler = async (event) => {
 
 	let created = document.created;
 	let updated = document.updated;
-	let tree = document.tree;
 
 	let meta: DocumentMeta = {
 		title,
@@ -90,7 +89,6 @@ export const GET: RequestHandler = async (event) => {
 		tags,
 		icon,
 		visibility,
-		tree,
 		updated,
 		created
 	};
@@ -185,8 +183,7 @@ export const POST: RequestHandler = async (event) => {
 				title: meta.title,
 				visibility: mapVisibilityToNumber(meta.visibility),
 				icon: meta.icon ? JSON.stringify(meta.icon) : undefined,
-				updated: new Date(),
-				tree: meta.tree
+				updated: new Date()
 			}
 		});
 
@@ -216,7 +213,6 @@ export const POST: RequestHandler = async (event) => {
 					tags: [],
 					icon: default_icon,
 					visibility: 'PRIVATE',
-					tree: false,
 					updated: new Date(),
 					created: new Date()
 				} as DocumentMeta)
@@ -228,7 +224,6 @@ export const POST: RequestHandler = async (event) => {
 		title: meta.title,
 		visibility: meta.visibility,
 		updated: new Date(),
-		tree: meta.tree,
 		icon: meta.icon,
 		tags: meta.tags
 	};

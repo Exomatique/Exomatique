@@ -31,3 +31,22 @@ export async function read(docId: string, path: string): Promise<string | undefi
 			.catch(() => undefined);
 	});
 }
+
+export async function list_files(docId: string, path: string): Promise<string[] | undefined> {
+	const client = create_client();
+
+	return client.connect(sftp_connect).then(async () => {
+		return client
+			.list(cwd + '/' + docId + '/' + path)
+			.then((v) => v.map((v) => v.name))
+			.catch(() => undefined);
+	});
+}
+
+export async function mkdir(docId: string, path: string): Promise<string | undefined> {
+	const client = create_client();
+
+	return client.connect(sftp_connect).then(async () => {
+		return client.mkdir(cwd + '/' + docId + '/' + path, true).catch(() => undefined);
+	});
+}

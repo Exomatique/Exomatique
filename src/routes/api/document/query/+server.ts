@@ -64,8 +64,7 @@ export const GET: RequestHandler = async (event) => {
 						library: 'lucide',
 						value: 'Image'
 					},
-			id: v.id,
-			tree: v.tree
+			id: v.id
 		};
 	});
 

@@ -12,7 +12,6 @@ export interface DocumentMeta {
 	created: Date;
 	updated: Date;
 	icon: IconMeta;
-	tree: boolean;
 	tags: string[];
 }
 
@@ -24,10 +23,6 @@ export const default_icon: IconMeta = {
 
 export function href(document: DocumentMeta, edit?: boolean) {
 	return '/documents/d/' + document.id + (edit ? '/edit/' : '/') + document.url;
-}
-
-export function hrefTree(document: DocumentMeta, edit?: boolean) {
-	return '/documents/tree/' + document.id + (edit ? '/edit' : '');
 }
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {
