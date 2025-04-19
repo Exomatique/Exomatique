@@ -1,42 +1,61 @@
+import { getChildAddress, getFileName, getFilePath, isFileHidden } from '$lib/file/distant_fs';
 import type { File, FileAddress, FileType, FileData, FileMeta } from '$lib/file/types';
-import { create_client, cwd, sftp_connect } from '../client';
-
-function getFilePath(address: FileAddress): string {
-	let path = address.path;
-	if (path.startsWith('/')) {
-		path = path.substring(1);
-	}
-	return `${address.document_id}/${path}`;
-}
-
-function isFileHidden(address: FileAddress): boolean {
-	let path = getFilePath(address);
-	path = path.substring(0, path.indexOf('/'));
-
-	const file_name = path.includes('/') ? path.substring(path.lastIndexOf('/') + 1) : path;
-
-	if (path.endsWith('.meta')) return true;
-
-	return file_name.startsWith('.') || file_name.startsWith('__');
-}
+import { create_client, cwd, prisma, sftp_connect } from '../client';
 
 export async function getMeta(address: FileAddress): Promise<FileMeta | undefined> {
 	if (isFileHidden(address)) {
 		return undefined;
 	}
+
+	const path = getFilePath(address);
+
 	const client = create_client();
 
-	const file_path = getFilePath(address) + '.meta';
+	const file_path = path + '.meta';
+	const meta_name = await getFileName({ document_id: address.document_id, path: file_path });
+
 	return client
 		.connect(sftp_connect)
-		.then(async () => {
-			const data = await client.get(cwd + '/' + file_path);
-			if (!data) {
+		.then(async (): Promise<FileMeta | undefined> => {
+			const data = await client.get(cwd + '/' + file_path).catch((e) => {
+				if (meta_name === '.meta') {
+					return JSON.stringify({
+						address: address,
+						type: 'directory',
+						created: new Date(),
+						updated: new Date()
+					});
+				} else if (
+					meta_name.endsWith('.meta') &&
+					meta_name.indexOf('.') !== meta_name.lastIndexOf('.')
+				) {
+					const type = meta_name.split('.').slice(-2, -1)[0];
+
+					if (type as any satisfies FileType) {
+						return JSON.stringify({
+							address: address,
+							type: type,
+							created: new Date(),
+							updated: new Date()
+						});
+					}
+				}
 				return undefined;
-			}
+			});
+			if (!data) return undefined;
 			const file: FileMeta = JSON.parse(data.toString());
 			client.end();
 			return file;
+		})
+		.then((file) => {
+			if (!file) return undefined;
+			return {
+				created: new Date(file.created),
+				updated: new Date(file.updated),
+				address: file.address,
+				type: file.type,
+				extra: file.extra
+			};
 		})
 		.catch((err) => {
 			console.error('Error reading file:', err);
@@ -49,34 +68,33 @@ export async function setMeta(address: FileAddress, meta: FileMeta): Promise<Fil
 		return undefined;
 	}
 
-	let real_meta: FileMeta | undefined = undefined;
-
-	getMeta(address).then((old_meta) => {
+	let real_meta: FileMeta | undefined = await getMeta(address).then((old_meta) => {
 		if (!old_meta) {
-			real_meta = {
+			return {
 				...meta,
-				created: new Date(),
-				updated: new Date()
-			};
+				created: meta.created ?? new Date(),
+				updated: meta.updated ?? new Date()
+			} as FileMeta;
 		}
 
 		if (meta.type !== old_meta?.type) {
 			throw new Error('File type mismatch');
 		}
 
-		if (meta.created !== old_meta?.created) {
-			throw new Error('File created date mismatch');
-		}
-
-		if (meta.address !== old_meta?.address) {
+		if (JSON.stringify(meta.address) !== JSON.stringify(old_meta?.address)) {
 			throw new Error('File address mismatch');
 		}
+
+		return {
+			...old_meta,
+			updated: new Date(),
+			extra: meta.extra
+		};
 	});
 
 	if (!real_meta) {
 		return undefined;
 	}
-
 	const client = create_client();
 	const file_path = getFilePath(address) + '.meta';
 
@@ -99,72 +117,54 @@ export async function read(address: FileAddress): Promise<File | undefined> {
 			return undefined;
 		}
 
-		switch (meta.type) {
-			case 'json': {
-				const client = create_client();
+		if (!(meta.type as any satisfies FileType)) throw new Error('Invalid file type');
 
-				const file_path = getFilePath(address);
-				return client
-					.connect(sftp_connect)
-					.then(async () => {
-						const data = await client.get(cwd + '/' + file_path);
-						if (!data) {
-							return undefined;
-						}
-						const file: File = {
-							...meta,
-							data: JSON.parse(data.toString())
-						};
-						client.end();
-						return file;
-					})
-					.catch((err) => {
-						console.error('Error reading file:', err);
-						return undefined;
-					});
-			}
+		if (meta.type === 'directory') {
+			const client = create_client();
+			const file_path = getFilePath(address);
+			return client
+				.connect(sftp_connect)
+				.then(async () => {
+					const files = await client.list(cwd + '/' + file_path);
 
-			case 'directory': {
-				const client = create_client();
-				const file_path = getFilePath(address);
-				return client
-					.connect(sftp_connect)
-					.then(async () => {
-						const data = await client.list(cwd + '/' + file_path);
-
-						const children = await Promise.all(
-							data
-								.filter((file) => file.name.endsWith('.meta'))
-								.map(async (file) => {
-									const file_path = getFilePath({
-										document_id: address.document_id,
-										path: address.path + '/' + file.name
-									});
-									const data = await client.get(cwd + '/' + file_path);
-									if (!data) {
-										return undefined;
-									}
-									const child: FileMeta = JSON.parse(data.toString());
-									return child;
-								})
-						);
-
-						const file: File = {
-							...meta,
-							type: 'directory',
-							data: children
-						};
-						client.end();
-						return file;
-					})
-					.catch((err) => {
-						console.error('Error reading file:', err);
-						return undefined;
-					});
-			}
-			default:
-				throw new Error('Invalid file type');
+					const children = files.filter(
+						(file) => !isFileHidden(getChildAddress(address, file.name))
+					);
+					const file: File = {
+						...meta,
+						type: 'directory',
+						data: children.map((file) => file.name)
+					};
+					client.end();
+					return file;
+				})
+				.catch((err) => {
+					console.error('Error reading file:', err);
+					return undefined;
+				});
 		}
+
+		const client = create_client();
+
+		const file_path = getFilePath(address);
+		return client
+			.connect(sftp_connect)
+			.then(async () => {
+				const data = await client.get(cwd + '/' + file_path);
+				if (!data) {
+					return undefined;
+				}
+				const file: File = {
+					...meta,
+					data: JSON.parse(data.toString())
+				};
+				client.end();
+				return file;
+			})
+			.catch((err) => {
+				console.error('Error reading file:', err);
+				return undefined;
+			});
 	});
 }
 
@@ -177,7 +177,7 @@ export async function write(
 		return undefined;
 	}
 
-	getMeta(address).then((meta) => {
+	return getMeta(address).then((meta) => {
 		if (!meta) {
 			meta = {
 				address,
@@ -189,75 +189,69 @@ export async function write(
 
 		const file_path = getFilePath(address);
 
-		switch (type) {
-			case 'json': {
-				if (typeof data !== 'object' && typeof data !== 'string') {
-					throw new Error('Invalid data type for JSON file');
-				}
+		if (!(meta.type as any satisfies FileType)) throw new Error('Invalid file type');
 
-				if (typeof data === 'object') {
-					data = JSON.stringify(data);
-				}
-
-				const client = create_client();
-
-				return client
-					.connect(sftp_connect)
-					.then(async () => {
-						await client.put(Buffer.from(data), cwd + '/' + file_path);
-						client.end();
-						const file: File = {
-							...meta,
-							updated: new Date(),
-							type: 'json',
-							data: data
-						};
-						await setMeta(address, file);
-						return file;
-					})
-					.catch((err) => {
-						console.error('Error writing file:', err);
-						return undefined;
-					});
+		if (meta.type === 'directory') {
+			if (!Array.isArray(data) || data.filter((v) => !(v satisfies FileMeta)).length !== 0) {
+				throw new Error('Invalid data type for directory file');
 			}
 
-			case 'directory':
-				if (!Array.isArray(data) || data.filter((v) => !(v satisfies FileMeta)).length !== 0) {
-					throw new Error('Invalid data type for directory file');
-				}
-
-				const client = create_client();
-				return client
-					.connect(sftp_connect)
-					.then(async () => {
-						await client.mkdir(cwd + '/' + file_path, true);
-						await Promise.all(
-							data.map(async (child: FileMeta) => {
-								const file_path = getFilePath(child.address);
-								await client.put(
-									Buffer.from(JSON.stringify(child)),
-									cwd + '/' + file_path + '.meta'
-								);
-								await client.put(Buffer.from(JSON.stringify(child)), cwd + '/' + file_path);
-							})
-						);
-						client.end();
-						const file: File = {
-							...meta,
-							updated: new Date(),
-							type: 'directory',
-							data
-						};
-						await setMeta(address, file);
-						return file;
-					})
-					.catch((err) => {
-						console.error('Error writing file:', err);
-						return undefined;
-					});
-			default:
-				throw new Error('Invalid file type');
+			const client = create_client();
+			return client
+				.connect(sftp_connect)
+				.then(async () => {
+					await client.mkdir(cwd + '/' + file_path, true);
+					await Promise.all(
+						data.map(async (child: FileMeta) => {
+							const file_path = getFilePath(child.address);
+							await client.put(Buffer.from(JSON.stringify(child)), cwd + '/' + file_path + '.meta');
+							await client.put(Buffer.from(JSON.stringify(child)), cwd + '/' + file_path);
+						})
+					);
+					client.end();
+					const file: File = {
+						...meta,
+						updated: new Date(),
+						type: 'directory',
+						data
+					};
+					await setMeta(address, file);
+					return file;
+				})
+				.catch((err) => {
+					console.error('Error writing file:', err);
+					return undefined;
+				});
 		}
+
+		if (typeof data !== 'object' && typeof data !== 'string') {
+			throw new Error('Invalid data type for JSON file');
+		}
+
+		if (typeof data === 'object') {
+			data = JSON.stringify(data);
+		}
+
+		const client = create_client();
+
+		return client
+			.connect(sftp_connect)
+			.then(async () => {
+				await client.put(Buffer.from(data), cwd + '/' + file_path);
+				client.end();
+				const file: File = {
+					...meta,
+					updated: new Date(),
+					type: type,
+					data: data
+				};
+				await setMeta(address, file);
+				return file;
+			})
+			.catch((err) => {
+				console.error('Error writing file:', err);
+				return undefined;
+			});
 	});
 }
 

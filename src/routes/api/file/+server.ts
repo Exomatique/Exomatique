@@ -30,13 +30,17 @@ export const GET: RequestHandler = async (event) => {
 		return error(400, { message: 'file_exist_fail' });
 	}
 
-	return json({ ok: 1, meta: file });
+	return json({ ok: 1, data: file });
 };
 
 export const POST: RequestHandler = async (event) => {
 	const { document_id, path, type, data } = await event.request.json();
 
-	if (!document_id || path == undefined || !type) {
+	if (
+		!document_id ||
+		path == undefined ||
+		!((data != null && type != null) || (data == null && type == null))
+	) {
 		return error(400, { message: 'missing_required_params_fail' });
 	}
 	// Check if document is accessible
@@ -51,7 +55,7 @@ export const POST: RequestHandler = async (event) => {
 		path
 	};
 
-	if (data != null) {
+	if (data != null && type != null) {
 		const file = await write(address, type, data);
 		if (!file) {
 			return error(400, { message: 'fail' });

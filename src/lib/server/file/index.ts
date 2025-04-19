@@ -1,6 +1,7 @@
 import type { Document } from '@prisma/client';
-import { Readable, Writable } from 'stream';
+import { Readable } from 'stream';
 import { create_client, cwd, prisma, sftp_connect } from '../client';
+import initializeDocument from '$lib/document/initializer';
 
 export async function create(authorId: string): Promise<Document> {
 	const doc = await prisma.document.create({ data: { authorId } });
@@ -9,6 +10,8 @@ export async function create(authorId: string): Promise<Document> {
 	await client.connect(sftp_connect).then(() => {
 		return client.mkdir(cwd + '/' + doc.id);
 	});
+
+	await initializeDocument(doc.id);
 
 	return doc;
 }

@@ -1,3 +1,4 @@
+import type { FileAddress } from '$lib/file/types';
 import type { IconMeta } from '$lib/types';
 
 export type DocumentVisibility = 'PUBLIC' | 'PROTECTED' | 'PRIVATE';
@@ -23,6 +24,10 @@ export const default_icon: IconMeta = {
 
 export function href(document: DocumentMeta, edit?: boolean) {
 	return '/documents/d/' + document.id + (edit ? '/edit/' : '/') + document.url;
+}
+
+export function fromAddressToHref(address: FileAddress, edit?: boolean) {
+	return '/documents/d/' + address.document_id + (edit ? '/edit/' : '/') + address.path;
 }
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {
