@@ -1,10 +1,18 @@
 import { get, post } from '$lib/utils';
-import type { File, FileAddress, FileData, FileMeta, FileType } from './types';
+import { resolvePageAddress } from '$lib/utils/link';
+import {
+	doesFileDataTypeMatchType,
+	type File,
+	type FileAddress,
+	type FileData,
+	type FileMeta,
+	type FileType
+} from './types';
 
 export function getRootAddress(document_id: string): FileAddress {
 	return {
 		document_id,
-		path: ''
+		path: '/'
 	};
 }
 
@@ -12,7 +20,24 @@ export function getChildAddress(address: FileAddress, child: string): FileAddres
 	if (address.path === '') {
 		return { ...address, path: child };
 	}
+
+	if (address.path.endsWith('/')) {
+		return { ...address, path: `${address.path}${child}` };
+	}
+
 	return { ...address, path: `${address.path}/${child}` };
+}
+
+export function getParentAddress(address: FileAddress): FileAddress {
+	if (address.path === '') {
+		return address;
+	}
+	const lastSlash = address.path.lastIndexOf('/', address.path.length - 2);
+	// If last character is a slash, we need to ignore it
+	if (lastSlash === -1) {
+		return { ...address, path: '' };
+	}
+	return { ...address, path: address.path.substring(0, lastSlash + 1) };
 }
 
 export function getFilePath(address: FileAddress): string {
@@ -33,7 +58,7 @@ export function isFileHidden(address: FileAddress): boolean {
 	return file_name.startsWith('.');
 }
 
-export async function getFileName(address: FileAddress): Promise<string> {
+export function getFileName(address: FileAddress): string {
 	if (!address.path.includes('/')) {
 		return address.path;
 	}
@@ -67,12 +92,14 @@ export async function setMeta(address: FileAddress, meta: FileMeta): Promise<Fil
 	});
 }
 
-export async function read(address: FileAddress): Promise<File | undefined> {
+export async function read(address: FileAddress, type?: FileType): Promise<File | undefined> {
 	if (isFileHidden(address)) {
 		return undefined;
 	}
 
-	return get('/file', { ...address }).then((res) => {
+	const resolved_address = type === 'page' ? resolvePageAddress(address) : address;
+
+	return get('/file', { ...resolved_address }).then((res) => {
 		if (res.ok !== 1) {
 			throw new Error('Failed to read file');
 		}
@@ -89,7 +116,13 @@ export async function write(
 		return undefined;
 	}
 
-	return post('/file', { ...address, type, data }).then((res) => {
+	if (!doesFileDataTypeMatchType(type, data)) {
+		throw new Error('File data type does not match file type');
+	}
+
+	const resolved_address = type === 'page' ? resolvePageAddress(address) : address;
+
+	return post('/file', { ...resolved_address, type, data }).then((res) => {
 		if (res.ok !== 1) {
 			throw new Error('Failed to write file');
 		}

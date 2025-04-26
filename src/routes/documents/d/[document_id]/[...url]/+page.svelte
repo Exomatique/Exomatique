@@ -5,28 +5,49 @@
 	import { get } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import Loading from '../../../../../components/Loading.svelte';
-	import { href, type DocumentMeta } from '$lib/document';
+	import { type DocumentMeta } from '$lib/document';
 	import { user } from '../../../../../store';
 	import type { ExoData } from '@exomatique_editor/base';
+	import { read } from '$lib/file/distant_fs';
+	import type { PageFile } from '$lib/file/types';
+	import { href } from '$lib/page/links';
+	import { resolvePageAddress } from '$lib/utils/link';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();
-	let document_id = fetch.document_id;
-	let url = fetch.url;
+
+	let document_id = $derived(fetch.document_id as string);
+	let url = $derived(fetch.url);
 
 	let document: DocumentMeta | undefined = $state(undefined);
 	let data: ExoData | undefined = $state(undefined);
+	let address = $derived({ document_id: document_id, path: url });
+	let real_address = $derived.by(() => resolvePageAddress(address));
 	let title = $state('');
 
+	$inspect(address, real_address);
+
 	onMount(() => {
-		get('/document', { document_id, url })
+		get('/document', { document_id })
 			.then((v) => {
 				document = v.meta as DocumentMeta;
-				data = JSON.parse(v.data || '[]');
 			})
 			.catch((e) => {
 				goto('/documents/error');
 			});
+
+		read({ ...real_address }, 'page').then((v) => {
+			if (!v || !(v as any satisfies PageFile)) {
+				goto('/documents/error');
+				return;
+			}
+			let page = v as PageFile;
+
+			if (page) {
+				data = page.data.content;
+				title = page.data.title;
+			}
+		});
 	});
 </script>
 
@@ -37,8 +58,9 @@
 				<h5 class="h5 mx-5 w-full px-2">{title}</h5>
 
 				{#if document && document.authorId === $user?.id}
-					<a class="btn bg-surface-200 hover:bg-surface-400 self-end" href={href(document, true)}
-						>Edit</a
+					<a
+						class="btn bg-surface-200 hover:bg-surface-400 self-end"
+						href={href(real_address, true)}>Edit</a
 					>
 				{/if}
 			</div>

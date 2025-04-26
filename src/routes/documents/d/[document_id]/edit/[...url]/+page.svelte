@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import Document from '$lib/document/Document.svelte';
 
 	/** @type {import('./$types').PageProps} */
-	let { data } = $props();
-	let document_id = data.document_id;
-	let url = data.url;
+	let { data = $bindable() } = $props();
+	let document_id = $derived(data.document_id as string);
+	let url = $derived(data.url);
 </script>
 
-<Document {url} {document_id} onFetchFail={() => goto('/documents/error', { state: 404 })} />
+<Document
+	address={{ document_id, path: url }}
+	onFetchFail={() => goto('/documents/error', { state: 404 })}
+/>

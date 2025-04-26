@@ -4,8 +4,10 @@
 	import { onMount } from 'svelte';
 	import { languageTag, setLanguageTag } from '$lib/paraglide/runtime';
 	import VisibilityBadge from './VisibilityBadge.svelte';
-	import { href, hrefTree, type DocumentMeta } from '$lib/document';
+	import { type DocumentMeta } from '$lib/document';
 	import DocumentIcon from './DocumentIcon.svelte';
+	import { getRootAddress } from '$lib/file/distant_fs';
+	import { href } from '$lib/page/links';
 
 	interface Props extends DocumentMeta {
 		edit?: boolean;
@@ -40,45 +42,28 @@
 	</div>
 
 	<div class="flex flex-col">
+		<div class="flex-end flex w-full gap-5">
+			<a
+				class="btn bg-surface-700 border-surface-500 self-end border-1"
+				href={href(getRootAddress(document.id))}
+				target="_blank"
+			>
+				<Eye />
+			</a>
+		</div>
+
+		<div class="flex-1"></div>
+
 		{#if edit}
 			<div class="flex-end flex w-full gap-5">
-				{#if document.tree}
-					<a
-						class="btn bg-surface-700 border-surface-500 self-end border-1"
-						href={hrefTree(document)}
-						target="_blank"
-					>
-						<Network />
-					</a>
-				{/if}
 				<a
 					class="btn bg-surface-700 border-surface-500 self-end border-1"
-					href={href(document)}
-					target="_blank"
-				>
-					<Eye />
-				</a>
-			</div>
-
-			<div class="flex-1"></div>
-			<div class="flex-end flex w-full gap-5">
-				{#if document.tree}
-					<a
-						class="btn bg-surface-700 border-surface-500 self-end border-1"
-						href={hrefTree(document, true)}
-						target="_blank"
-					>
-						<Network />
-					</a>
-				{/if}
-				<a
-					class="btn bg-surface-700 border-surface-500 self-end border-1"
-					href={href(document, true)}
+					href={href(getRootAddress(document.id), true)}
 					target="_blank"
 				>
 					<Pen />
 				</a>
 			</div>
-		{:else}{/if}
+		{/if}
 	</div>
 </div>

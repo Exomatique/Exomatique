@@ -6,8 +6,9 @@
 	import Loading from '../../components/Loading.svelte';
 	import { onMount } from 'svelte';
 	import VisibilityBadge from '../../components/document/VisibilityBadge.svelte';
-	import { href } from '$lib/document';
 	import { Eye, Pen } from '@lucide/svelte';
+	import { getRootAddress } from '$lib/file/distant_fs';
+	import { href } from '$lib/page/links';
 
 	let data: DocumentMeta[] | undefined = $state(undefined);
 
@@ -17,7 +18,7 @@
 				.map(
 					(v): DocumentMeta => ({
 						...v,
-						url: 'index.json',
+						url: 'index.page',
 						created: new Date(v.created),
 						updated: new Date(v.updated)
 					})
@@ -67,7 +68,7 @@
 						<td>
 							<a
 								class="btn bg-surface-700 border-surface-500 self-start border-1"
-								href={href(document, true)}
+								href={href(getRootAddress(document.id), true)}
 								target="_blank"
 							>
 								<Pen />
@@ -77,7 +78,7 @@
 						<td>
 							<a
 								class="btn bg-surface-700 border-surface-500 self-end border-1"
-								href={href(document)}
+								href={href(getRootAddress(document.id))}
 								target="_blank"
 							>
 								<Eye />

@@ -38,3 +38,41 @@ export interface Directory extends File {
 }
 
 export type FileCache = Map<FileAddress, FileMeta | File>;
+
+export function isFileMeta(file: FileMeta | File): file is FileMeta {
+	return 'address' in file && 'type' in file && 'created' in file && 'updated' in file;
+}
+
+export function isFilePage(file: File): file is PageFile {
+	return file.type === 'page' && isFileMeta(file);
+}
+
+export function isFileDataPage(data: FileData): data is PageData {
+	return data && typeof data === 'object' && 'content' in data && 'title' in data;
+}
+
+export function isFileJson<T>(file: File): file is JsonFile<T> {
+	return file.type === 'json' && isFileMeta(file);
+}
+
+export function isFileDataJson<T>(data: FileData): data is any {
+	return true;
+}
+
+export function isFileDirectory(file: File): file is Directory {
+	return file.type === 'directory' && isFileMeta(file);
+}
+
+export function isFileDataDirectory(data: FileData): data is string[] {
+	return Array.isArray(data) && data.every((item) => typeof item === 'string');
+}
+
+export function doesFileDataTypeMatchType(type: FileType, data: FileData) {
+	return type === 'json'
+		? isFileDataJson(data)
+		: type === 'directory'
+			? isFileDataDirectory(data)
+			: type === 'page'
+				? isFileDataPage(data)
+				: false;
+}

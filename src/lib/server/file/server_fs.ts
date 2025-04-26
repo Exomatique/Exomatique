@@ -1,5 +1,12 @@
 import { getChildAddress, getFileName, getFilePath, isFileHidden } from '$lib/file/distant_fs';
-import type { File, FileAddress, FileType, FileData, FileMeta } from '$lib/file/types';
+import {
+	type File,
+	type FileAddress,
+	type FileType,
+	type FileData,
+	type FileMeta,
+	doesFileDataTypeMatchType
+} from '$lib/file/types';
 import { create_client, cwd, prisma, sftp_connect } from '../client';
 
 export async function getMeta(address: FileAddress): Promise<FileMeta | undefined> {
@@ -177,6 +184,10 @@ export async function write(
 		return undefined;
 	}
 
+	if (!doesFileDataTypeMatchType(type, data)) {
+		throw new Error('File data type does not match file type');
+	}
+
 	return getMeta(address).then((meta) => {
 		if (!meta) {
 			meta = {
@@ -190,6 +201,9 @@ export async function write(
 		const file_path = getFilePath(address);
 
 		if (!(meta.type as any satisfies FileType)) throw new Error('Invalid file type');
+		if (meta.type !== type) {
+			throw new Error('File type mismatch');
+		}
 
 		if (meta.type === 'directory') {
 			if (!Array.isArray(data) || data.filter((v) => !(v satisfies FileMeta)).length !== 0) {

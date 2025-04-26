@@ -8,7 +8,7 @@
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
 	import { goto } from '$app/navigation';
-	import { href, mapNumberToVisiblity, type DocumentMeta } from './types';
+	import { mapNumberToVisiblity, type DocumentMeta } from './types';
 	import { user } from '../../store';
 	import type { ExoData } from '@exomatique_editor/base';
 	import Editor from './Editor.svelte';
@@ -16,7 +16,12 @@
 	import IconPicker from '../../components/utils/IconPicker.svelte';
 	import type { IconMeta } from '$lib/types';
 	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
-	import { updated } from '$app/state';
+	import FileExplorer from '$lib/file/FileExplorer.svelte';
+	import { getChildAddress, getFileName, getRootAddress, read, write } from '$lib/file/distant_fs';
+	import type { FileAddress, PageFile } from '$lib/file/types';
+	import type { PageData } from '$lib/page';
+	import { href } from '$lib/page/links';
+	import { resolvePageAddress } from '$lib/utils/link';
 
 	interface ComboboxData {
 		label: string;
@@ -29,16 +34,15 @@
 	let icon: IconMeta | undefined = $state();
 
 	let {
-		document_id,
-		onFetchFail = () => {},
-		url
+		address = $bindable(),
+		onFetchFail = () => {}
 	}: {
-		url: string;
-		document_id: string;
+		address: FileAddress;
 		onFetchFail?: () => void;
 	} = $props();
 
-	let params_open = $state(false);
+	let real_address = $derived.by(() => resolvePageAddress(address));
+
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
 	let title: string | undefined = $state('');
@@ -51,26 +55,35 @@
 	let lastSavedRaw = JSON.stringify({});
 	$effect(() => {
 		let post_data = {
-			document_id,
-			url,
+			real_address,
 			data,
 			title,
 			tags,
 			icon,
 			visibility: Number.parseInt(visibility)
 		};
+
 		// Use post_data to prevent editor error
-		if (saveTimeout && post_data) clearTimeout(saveTimeout);
-		saveTimeout = setTimeout(() => save(true), 5000);
+		post_data;
+		resetSaveTimeout();
 	});
 
+	function resetSaveTimeout() {
+		if (saveTimeout) clearTimeout(saveTimeout);
+		if (document != null)
+			saveTimeout = setTimeout(() => {
+				// save(true);
+			}, 5000);
+	}
+
 	async function save(autosave?: boolean) {
-		const toBeSaved = {
+		const toBeSaved: Partial<DocumentMeta> = {
 			...document,
+			...real_address,
 			title,
 			tags,
 			icon,
-			visibility: Number.parseInt(visibility)
+			visibility: mapNumberToVisiblity(Number.parseInt(visibility))
 		};
 
 		const trimmedToBeSaved = {
@@ -101,10 +114,10 @@
 		);
 
 		toaster.promise(
-			post('/document', {
-				meta: toBeSaved,
-				data: JSON.stringify(data)
-			}).finally(() => (isSaving = false)),
+			write(real_address, 'page', {
+				title: toBeSaved.title || '',
+				content: data || []
+			} satisfies PageData).finally(() => (isSaving = false)),
 			{
 				loading: {
 					title: langs.saving,
@@ -114,48 +127,75 @@
 					title: langs.saved,
 					description: autosave ? langs.auto_saved_description : langs.saved_description
 				}),
-				error: () => ({
-					title: langs.save_fail,
-					description: langs.save_fail_description
-				})
+				error: (e) => {
+					console.error(e);
+					return {
+						title: langs.save_fail,
+						description: langs.save_fail_description
+					};
+				}
 			}
 		);
 	}
 
 	let document = $state(undefined as DocumentMeta | undefined);
 
-	onMount(() => {
-		get('/document', { document_id, url })
-			.then((v) => {
-				if (v.meta.authorId !== $user.id) {
+	function loadPage() {
+		data = undefined;
+
+		if (document?.id !== real_address.document_id) {
+			get('/document', { document_id: real_address.document_id })
+				.then((v) => {
+					const document_meta = v.meta as DocumentMeta;
+
+					document = document_meta;
+					title = document_meta.title;
+					tags = document_meta.tags;
+					icon = document_meta.icon;
+					visibility = document_meta.visibility;
+				})
+				.catch((e) => {
+					console.error(e);
 					onFetchFail();
-					return;
-				}
+				});
 
-				document = v.meta as DocumentMeta;
-				title = document.title;
-				tags = document.tags;
-				icon = document.icon;
-				visibility = document.visibility;
+			get('/tags').then((v) => {
+				tagsData = v.data as ComboboxData[];
+			});
+		}
 
-				data = JSON.parse(v.data || '[]');
+		read(real_address, 'page')
+			.then((unsafe_file) => {
+				if (!unsafe_file) throw new Error('File not found');
+				if (!(unsafe_file as any satisfies PageFile)) throw new Error('File is not a page');
+
+				const file = unsafe_file as PageFile;
+
 				const trimmedToBeSaved = {
-					...document,
-					title,
-					tags,
-					icon,
-					visibility: Number.parseInt(visibility),
+					...file,
 					updated: undefined,
-					data: JSON.stringify(data)
+					data: JSON.stringify(file.data)
 				};
-
 				lastSavedRaw = JSON.stringify(trimmedToBeSaved);
-			})
-			.catch(onFetchFail);
 
-		get('/tags').then((v) => {
-			tagsData = v.data as ComboboxData[];
-		});
+				data = file.data.content;
+
+				resetSaveTimeout();
+			})
+			.catch((e) => {
+				console.error(e);
+
+				onFetchFail();
+			});
+	}
+
+	onMount(() => {
+		loadPage();
+	});
+
+	$effect(() => {
+		real_address;
+		loadPage();
 	});
 
 	let deletePopoverState = $state(false);
@@ -168,7 +208,7 @@
 
 	async function deleteDocument() {
 		if (deletionConfirmText !== title) return;
-		await post('/document/delete', { document_id }).finally(() => goto('/documents'));
+		await post('/document/delete', real_address).finally(() => goto('/documents'));
 	}
 
 	const toaster = createToaster({ placement: 'bottom-end' });
@@ -193,7 +233,7 @@
 <Toaster {toaster}></Toaster>
 
 <div class="relative flex h-full flex-1 flex-col items-center">
-	{#if data}
+	{#if document !== undefined}
 		<div
 			class="relative mt-5 mb-10 w-3/4 flex-row rounded-md bg-white text-neutral-950 scheme-light"
 		>
@@ -216,14 +256,12 @@
 				{/key}
 
 				<input class="w-full px-2" maxlength="128" type="text" bind:value={title} />
-				{#if document}
-					<a
-						class="btn bg-surface-200 hover:bg-surface-400 self-end"
-						href={href(document)}
-						class:disabled={isSaving}
-						onclick={() => save()}>View</a
-					>
-				{/if}
+				<a
+					class="btn bg-surface-200 hover:bg-surface-400 self-end"
+					href={href(address)}
+					class:disabled={isSaving}
+					onclick={() => save()}>View</a
+				>
 				<button
 					class="btn bg-surface-200 hover:bg-surface-400 self-end"
 					class:disabled={isSaving}
@@ -340,19 +378,23 @@
 			</div>
 		</div>
 	{/if}
-	<div
-		class="relative w-3/4 flex-row rounded-md bg-white p-2 text-neutral-950 scheme-light"
-		class:mt-5={!Boolean(data)}
-	>
-		{#if data}
-			<Editor editable bind:data />
-		{:else}
-			<div class="pr-2 pb-2">
-				<div class="flex w-full grow justify-center shadow-2xl">
+
+	<div class="relative flex max-h-dvh w-full grow flex-row">
+		<div class="w-1/4 rounded-md p-2">
+			<FileExplorer address={getRootAddress(address.document_id)} />
+		</div>
+		<div class="bg-surface-900 w-2 p-1"></div>
+		<div
+			class="m-2 h-full w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
+		>
+			{#if data !== undefined}
+				<Editor editable bind:data />
+			{:else}
+				<div class="flex h-full w-full justify-center">
 					<Loading size={'extra-large'} />
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </div>
 

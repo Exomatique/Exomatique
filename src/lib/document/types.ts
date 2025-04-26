@@ -5,7 +5,6 @@ export type DocumentVisibility = 'PUBLIC' | 'PROTECTED' | 'PRIVATE';
 
 export interface DocumentMeta {
 	id: string;
-	url: string;
 	title: string;
 	author: string;
 	authorId: string;
@@ -21,14 +20,6 @@ export const default_icon: IconMeta = {
 	value: 'Image',
 	numbering: 10
 };
-
-export function href(document: DocumentMeta, edit?: boolean) {
-	return '/documents/d/' + document.id + (edit ? '/edit/' : '/') + document.url;
-}
-
-export function fromAddressToHref(address: FileAddress, edit?: boolean) {
-	return '/documents/d/' + address.document_id + (edit ? '/edit/' : '/') + address.path;
-}
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {
 	switch (visibility) {

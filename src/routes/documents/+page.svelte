@@ -39,7 +39,7 @@
 		documents = v.data.map((v: any) => ({
 			...v,
 			visibility: mapNumberToVisiblity(v.visibility),
-			url: 'index.json'
+			url: 'index.page'
 		}));
 	}
 
