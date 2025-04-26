@@ -9,16 +9,20 @@ import {
 } from '$lib/file/types';
 import type sftp from 'ssh2-sftp-client';
 import { cwd, prisma, sftp_connect, create_client } from '../client';
+import { Mutex } from 'async-mutex';
 
 let client: sftp | undefined = undefined;
 let connected = false;
+let connection_mutex = new Mutex();
 export async function getClient() {
-	if (!client || !connected) {
-		client = create_client();
-		await client.connect(sftp_connect);
-		connected = true;
-	}
-	return client;
+	return connection_mutex.runExclusive(async () => {
+		if (!client || !connected || !(client as any).sftp) {
+			client = create_client();
+			await client.connect(sftp_connect);
+			connected = true;
+		}
+		return client;
+	});
 }
 
 export async function getMeta(address: FileAddress): Promise<FileMeta | undefined> {

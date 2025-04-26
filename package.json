@@ -75,6 +75,7 @@
 		"@types/ssh2-sftp-client": "^9.0.4",
 		"@zag-js/svelte": "^1.4.0",
 		"animejs": "^4.0.1",
+		"async-mutex": "^0.5.0",
 		"panzoom": "^9.4.3",
 		"ssh2-sftp-client": "^11.0.0"
 	}
