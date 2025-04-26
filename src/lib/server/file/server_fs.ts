@@ -126,11 +126,21 @@ export async function read(address: FileAddress): Promise<File | undefined> {
 
 			const files = await client.list(cwd + '/' + file_path);
 
-			const children = files.filter((file) => !isFileHidden(getChildAddress(address, file.name)));
+			const children = files
+				.filter((file) => !isFileHidden(getChildAddress(address, file.name)))
+				.map((file) => file.name);
+
+			children.sort((a, b) => {
+				let i_a = a.includes('.') ? -1 : 1;
+				let i_b = b.includes('.') ? -1 : 1;
+
+				return i_a === i_b ? a.localeCompare(b) : i_b - i_a;
+			});
+
 			const file: File = {
 				...meta,
 				type: 'directory',
-				data: children.map((file) => file.name)
+				data: children
 			};
 			return file;
 		}
