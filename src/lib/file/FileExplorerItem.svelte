@@ -16,7 +16,11 @@
 
 	import FileExplorerItem from './FileExplorerItem.svelte';
 
-	let { address, cache }: { address: FileAddress; cache: FileCache } = $props();
+	let {
+		address,
+		cache,
+		selected = $bindable()
+	}: { address: FileAddress; cache: FileCache; selected: FileAddress | undefined } = $props();
 
 	let file: FileMeta | undefined = $state();
 	let name: string = getFileName(address);
@@ -33,7 +37,13 @@
 	});
 </script>
 
-<div class="bg-surface-800 flex flex-row items-center gap-2 px-2 py-1">
+<div
+	role="none"
+	class="flex flex-row items-center gap-2 px-2 py-1"
+	class:bg-surface-700={selected?.path === address.path}
+	class:bg-surface-800={selected?.path !== address.path}
+	onclick={() => (selected = address)}
+>
 	{#if isDirAddress(address)}
 		{#if collaspsed}
 			<ChevronRight size={16} />
@@ -64,7 +74,7 @@
 {#if file?.type === 'directory' && children && !collaspsed}
 	<div class="relative ml-8">
 		{#each children as child}
-			<FileExplorerItem {cache} address={getChildAddress(address, child)} />
+			<FileExplorerItem bind:selected {cache} address={getChildAddress(address, child)} />
 		{/each}
 	</div>
 {/if}
