@@ -33,6 +33,15 @@
 		}
 	});
 
+	$effect(() => {
+		updater;
+
+		read(address, 'directory').then((v) => {
+			file = v;
+			if (v) cache.set(address.path, v);
+		});
+	});
+
 	async function onNewFile(filePath: string) {
 		if (!filePath.includes('.')) filePath += '.page';
 		selected = selected || getRootAddress(address.document_id);
@@ -211,13 +220,16 @@
 		</Modal>
 	</div>
 	<div class="flex w-full grow flex-col">
-		{#key updater}
+		{#key file}
 			{#if file && (file as any).data}
-				{#if file && (file as any).data}
-					{#each (file as any).data as string[] as value}
-						<FileExplorerItem bind:selected {cache} address={getChildAddress(address, value)} />
-					{/each}
-				{/if}
+				{#each (file as any).data as string[] as value}
+					<FileExplorerItem
+						bind:updater
+						bind:selected
+						{cache}
+						address={getChildAddress(address, value)}
+					/>
+				{/each}
 			{:else}
 				<div class="bg-surface-800 flex w-full grow flex-col items-center justify-center gap-2 p-5">
 					<Loading size={'extra-large'} />

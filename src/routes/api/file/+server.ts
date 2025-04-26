@@ -35,7 +35,6 @@ export const GET: RequestHandler = async (event) => {
 
 export const POST: RequestHandler = async (event) => {
 	const { document_id, path, type, data } = await event.request.json();
-
 	if (
 		!document_id ||
 		path == undefined ||

@@ -1,4 +1,10 @@
-import { getChildAddress, getFileName, getFilePath, isFileHidden } from '$lib/file/distant_fs';
+import {
+	getChildAddress,
+	getFileName,
+	getFilePath,
+	isDirAddress,
+	isFileHidden
+} from '$lib/file/distant_fs';
 import {
 	type File,
 	type FileAddress,
@@ -243,7 +249,7 @@ export async function remove(address: FileAddress): Promise<boolean | undefined>
 		return undefined;
 	}
 
-	getMeta(address).then(async (meta) => {
+	return getMeta(address).then(async (meta) => {
 		if (!meta) {
 			return undefined;
 		}
@@ -256,7 +262,7 @@ export async function remove(address: FileAddress): Promise<boolean | undefined>
 		} else {
 			await client.delete(cwd + '/' + file_path);
 		}
-		await client.delete(cwd + '/' + file_path + '.meta');
+		if (!isDirAddress(address)) await client.delete(cwd + '/' + file_path + '.meta');
 		return true;
 	});
 }
