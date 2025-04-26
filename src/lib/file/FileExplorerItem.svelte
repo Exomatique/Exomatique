@@ -79,7 +79,6 @@
 		cache.delete(address.path);
 		cache.delete(getParentAddress(address).path);
 
-		console.log(page.url.pathname);
 		if (!isDirAddress(address) && page.url.pathname.endsWith(simplifyPageAddress(address).path)) {
 			goto(href(getRootAddress(address.document_id), page.url.pathname.includes('/edit')));
 		}
@@ -145,13 +144,6 @@
 									type="checkbox"
 									class="input inline outline-none"
 									bind:checked={deleteNonEmptyFolder}
-									onfocus={(e) => {
-										const length = e.currentTarget.value.length;
-										const el = e.currentTarget;
-										setTimeout(() => {
-											el.setSelectionRange(length, length);
-										});
-									}}
 								/>
 							</div>
 						{/if}

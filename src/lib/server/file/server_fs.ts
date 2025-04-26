@@ -255,7 +255,7 @@ export async function remove(address: FileAddress): Promise<boolean | undefined>
 		} else {
 			await client.delete(cwd + '/' + file_path);
 		}
-		if (!isDirAddress(address)) await client.delete(cwd + '/' + file_path + '.meta');
+		if (!isDirAddress(address)) await client.delete(cwd + '/' + file_path + '.meta', true);
 		return true;
 	});
 }

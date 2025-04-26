@@ -25,8 +25,6 @@
 	let real_address = $derived.by(() => resolvePageAddress(address));
 	let title = $state('');
 
-	$inspect(address, real_address);
-
 	onMount(() => {
 		get('/document', { document_id })
 			.then((v) => {
