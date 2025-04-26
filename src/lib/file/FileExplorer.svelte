@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import type { Directory, FileAddress, FileCache, FileMeta } from './types';
 	import {
+		ensureDirPath,
 		getChildAddress,
 		getParentAddress,
 		getRootAddress,
@@ -32,13 +33,15 @@
 		}
 	});
 
-	async function onNewFile(fileName: string) {
-		if (!fileName.includes('.')) fileName += '.page';
+	async function onNewFile(filePath: string) {
+		if (!filePath.includes('.')) filePath += '.page';
 		selected = selected || getRootAddress(address.document_id);
-		const fileAddress = getChildAddress(
-			isDirAddress(selected) ? selected : getParentAddress(selected),
-			fileName
-		);
+		const fileAddress = { document_id: address.document_id, path: filePath };
+
+		if (!filePath.startsWith('/')) {
+			nameError = true;
+			return;
+		}
 
 		if (cache.has(fileAddress.path)) {
 			nameError = true;
@@ -50,12 +53,22 @@
 			return;
 		}
 
+		if (!cache.has(getParentAddress(fileAddress).path)) {
+			nameError = true;
+			return;
+		}
+
 		await write(fileAddress, 'page', {
-			title: fileName,
+			title: filePath,
 			content: []
 		} satisfies PageData).then(async (directory_data) => {
 			const parent = getParentAddress(fileAddress).path;
 			cache.delete(parent.substring(0, parent.length - 1));
+
+			if (parent === '/') {
+				file = await read(address, 'directory');
+				if (file) cache.set(address.path, file);
+			}
 			selected = fileAddress;
 			updater += 1;
 		});
@@ -63,25 +76,26 @@
 		openFileModal = false;
 	}
 
-	async function onNewFolder(folderName: string) {
-		selected = selected || getRootAddress(address.document_id);
-		const fileAddress = getChildAddress(
-			isDirAddress(selected) ? selected : getParentAddress(selected),
-			folderName
-		);
+	async function onNewFolder(folderPath: string) {
+		const folderAddress = { document_id: address.document_id, path: folderPath };
 
-		if (!isDirAddress(fileAddress)) {
+		if (!isDirAddress(folderAddress)) {
 			nameError = true;
 			return;
 		}
 
-		await write(fileAddress, 'directory', []).then(async (directory_data) => {
+		await write(folderAddress, 'directory', []).then(async (directory_data) => {
 			if (!directory_data) return;
 			if (directory_data) {
-				const parent = getParentAddress(fileAddress).path;
+				const parent = getParentAddress(folderAddress).path;
 				cache.delete(parent.substring(0, parent.length - 1));
 
-				selected = fileAddress;
+				if (parent === '/') {
+					file = await read(address, 'directory');
+					if (file) cache.set(address.path, file);
+				}
+
+				selected = folderAddress;
 				updater += 1;
 			}
 		});
@@ -92,7 +106,12 @@
 	let openFileModal: boolean = $state(false);
 	let openFolderModal: boolean = $state(false);
 
-	let fileNameInput: string = $state('');
+	let fileNameInput: string = $state('/');
+
+	$effect(() => {
+		if (!fileNameInput.startsWith('/')) fileNameInput = '/' + fileNameInput;
+	});
+
 	let nameError: boolean = $state(false);
 </script>
 
@@ -101,8 +120,8 @@
 		<Modal
 			open={openFileModal}
 			onOpenChange={(e) => {
+				fileNameInput = selected?.path || '/';
 				openFileModal = e.open;
-				fileNameInput = '';
 				nameError = false;
 			}}
 			base="grow flex items-center justify-center"
@@ -122,6 +141,13 @@
 						placeholder="File name"
 						class="input outline-none"
 						bind:value={fileNameInput}
+						onfocus={(e) => {
+							const length = e.currentTarget.value.length;
+							const el = e.currentTarget;
+							setTimeout(() => {
+								el.setSelectionRange(length, length);
+							});
+						}}
 					/>
 					<h4 class="text-error-500 text-sm" class:invisible={!nameError}>
 						File name is incorrect (file may already exist or file extension is invalid)
@@ -139,8 +165,12 @@
 		<Modal
 			open={openFolderModal}
 			onOpenChange={(e) => {
+				fileNameInput = selected
+					? isDirAddress(selected)
+						? ensureDirPath(selected).path
+						: getParentAddress(selected).path
+					: '/';
 				openFolderModal = e.open;
-				fileNameInput = '';
 				nameError = false;
 			}}
 			base="grow flex items-center justify-center"
@@ -160,6 +190,13 @@
 						placeholder="Folder name"
 						class="input outline-none"
 						bind:value={fileNameInput}
+						onfocus={(e) => {
+							const length = e.currentTarget.value.length;
+							const el = e.currentTarget;
+							setTimeout(() => {
+								el.setSelectionRange(length, length);
+							});
+						}}
 					/>
 					<h4 class="text-error-500 text-sm" class:invisible={!nameError}>
 						Folder name is incorrect (folder may already exist or the name is invalid)
