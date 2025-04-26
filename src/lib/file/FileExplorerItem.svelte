@@ -35,6 +35,12 @@
 		}
 		children = file?.type === 'directory' ? (file as Directory).data : undefined;
 	});
+
+	$effect(() => {
+		if (selected && selected.path.startsWith(address.path)) {
+			collaspsed = false;
+		}
+	});
 </script>
 
 <div
