@@ -54,15 +54,10 @@
 			title: fileName,
 			content: []
 		} satisfies PageData).then(async (directory_data) => {
-			if (!directory_data) return;
-			if (directory_data) {
-				cache.clear();
-				file = await read(address, 'directory');
-				if (file) cache.set(address.path, file);
-
-				selected = fileAddress;
-				updater += 1;
-			}
+			const parent = getParentAddress(fileAddress).path;
+			cache.delete(parent.substring(0, parent.length - 1));
+			selected = fileAddress;
+			updater += 1;
 		});
 
 		openFileModal = false;
@@ -83,9 +78,8 @@
 		await write(fileAddress, 'directory', []).then(async (directory_data) => {
 			if (!directory_data) return;
 			if (directory_data) {
-				cache.clear();
-				file = await read(address, 'directory');
-				if (file) cache.set(address.path, file);
+				const parent = getParentAddress(fileAddress).path;
+				cache.delete(parent.substring(0, parent.length - 1));
 
 				selected = fileAddress;
 				updater += 1;

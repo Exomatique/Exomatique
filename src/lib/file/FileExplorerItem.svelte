@@ -37,7 +37,11 @@
 	});
 
 	$effect(() => {
-		if (selected && selected.path.startsWith(address.path)) {
+		if (
+			selected &&
+			(selected.path + '/').startsWith(address.path + '/') &&
+			selected.path !== address.path
+		) {
 			collaspsed = false;
 		}
 	});
