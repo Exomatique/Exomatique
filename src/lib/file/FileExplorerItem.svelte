@@ -107,16 +107,16 @@
 	{/if}
 
 	{#if isDirAddress(address)}
-		<button onclick={() => (collaspsed = !collaspsed)} disabled={file?.type === undefined}
-			>{name}</button
+		<button
+			class="block grow text-start"
+			onclick={() => (collaspsed = !collaspsed)}
+			disabled={file?.type === undefined}>{name}</button
 		>
 	{:else if file?.type === undefined}
-		<p class="opacity-60">{name}</p>
+		<p class="grow text-start opacity-60">{name}</p>
 	{:else}
-		<a href={href(address, true)}>{name}</a>
+		<a class="block grow text-start" href={href(address, true)}>{name}</a>
 	{/if}
-
-	<div class="grow"></div>
 
 	{#if file?.type === undefined}
 		<Loading size={'small'} />
