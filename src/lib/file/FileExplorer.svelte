@@ -4,6 +4,7 @@
 	import {
 		ensureDirPath,
 		getChildAddress,
+		getFileName,
 		getParentAddress,
 		getRootAddress,
 		isDirAddress,
@@ -63,8 +64,7 @@
 		}
 
 		if (!cache.has(getParentAddress(fileAddress).path)) {
-			nameError = true;
-			return;
+			await write(getParentAddress(fileAddress), 'directory', [getFileName(fileAddress)]);
 		}
 
 		await write(fileAddress, 'page', {

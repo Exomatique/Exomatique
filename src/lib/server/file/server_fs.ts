@@ -206,13 +206,6 @@ export async function write(
 
 			const client = await getClient();
 			await client.mkdir(cwd + '/' + file_path, true);
-			await Promise.all(
-				data.map(async (child: FileMeta) => {
-					const file_path = getFilePath(child.address);
-					await client.put(Buffer.from(JSON.stringify(child)), cwd + '/' + file_path + '.meta');
-					await client.put(Buffer.from(JSON.stringify(child)), cwd + '/' + file_path);
-				})
-			);
 			const file: File = {
 				...meta,
 				updated: new Date(),
