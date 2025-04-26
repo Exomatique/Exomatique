@@ -60,7 +60,7 @@ export const POST: RequestHandler = async (event) => {
 		if (!file) {
 			return error(400, { message: 'fail' });
 		}
-		return json({ ok: 1, file });
+		return json({ ok: 1, data: file });
 	}
 
 	const file = await remove(address);
