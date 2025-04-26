@@ -40,6 +40,22 @@ export function getParentAddress(address: FileAddress): FileAddress {
 	return { ...address, path: address.path.substring(0, lastSlash + 1) };
 }
 
+export function ensureDirPath(address: FileAddress): FileAddress {
+	if (address.path.endsWith('/')) {
+		return address;
+	}
+	return { ...address, path: address.path + '/' };
+}
+
+export function isDirAddress(address: FileAddress): boolean {
+	if (address.path.endsWith('/')) {
+		return true;
+	}
+	const name = getFileName(address);
+
+	return !name.includes('.');
+}
+
 export function getFilePath(address: FileAddress): string {
 	let path = address.path;
 	if (path.startsWith('/')) {
@@ -71,7 +87,9 @@ export async function getMeta(address: FileAddress): Promise<FileMeta | undefine
 		return undefined;
 	}
 
-	return get('/file/meta', { ...address }).then((res) => {
+	const resolved_address = getFileName(address).includes('.') ? address : ensureDirPath(address);
+
+	return get('/file/meta', { ...resolved_address }).then((res) => {
 		if (res.ok !== 1) {
 			throw new Error('Failed to get file meta');
 		}
@@ -84,7 +102,9 @@ export async function setMeta(address: FileAddress, meta: FileMeta): Promise<Fil
 		return undefined;
 	}
 
-	return post('/file/meta', { ...address, meta }).then((res) => {
+	const resolved_address = getFileName(address).includes('.') ? address : ensureDirPath(address);
+
+	return post('/file/meta', { ...resolved_address, meta }).then((res) => {
 		if (res.ok !== 1) {
 			throw new Error('Failed to set file meta');
 		}
@@ -97,7 +117,12 @@ export async function read(address: FileAddress, type?: FileType): Promise<File 
 		return undefined;
 	}
 
-	const resolved_address = type === 'page' ? resolvePageAddress(address) : address;
+	const resolved_address =
+		type === 'page'
+			? resolvePageAddress(address)
+			: type === 'directory'
+				? ensureDirPath(address)
+				: address;
 
 	return get('/file', { ...resolved_address }).then((res) => {
 		if (res.ok !== 1) {
@@ -120,7 +145,12 @@ export async function write(
 		throw new Error('File data type does not match file type');
 	}
 
-	const resolved_address = type === 'page' ? resolvePageAddress(address) : address;
+	const resolved_address =
+		type === 'page'
+			? resolvePageAddress(address)
+			: type === 'directory'
+				? ensureDirPath(address)
+				: address;
 
 	return post('/file', { ...resolved_address, type, data }).then((res) => {
 		if (res.ok !== 1) {

@@ -37,7 +37,7 @@ export interface Directory extends File {
 	readonly data: string[];
 }
 
-export type FileCache = Map<FileAddress, FileMeta | File>;
+export type FileCache = Map<string, FileMeta | File>;
 
 export function isFileMeta(file: FileMeta | File): file is FileMeta {
 	return 'address' in file && 'type' in file && 'created' in file && 'updated' in file;
