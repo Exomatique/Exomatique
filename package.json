@@ -57,7 +57,7 @@
 		"vitest": "^3.0.7"
 	},
 	"dependencies": {
-		"@exomatique_editor/base": "^1.0.1",
+		"@exomatique_editor/base": "^1.1.3",
 		"@exomatique_editor/graph": "^1.0.0",
 		"@exomatique_editor/latex": "^1.0.0",
 		"@exomatique_editor/md": "^1.0.0",

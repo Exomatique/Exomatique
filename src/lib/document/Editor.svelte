@@ -1,12 +1,21 @@
 <script lang="ts">
-	import { Editor, ExoEditor, type ExoData } from '@exomatique_editor/base';
+	import { Editor, ExoEditor, type ExoData, type IExoModule } from '@exomatique_editor/base';
 	import { GraphModule } from '@exomatique_editor/graph';
 	import { LatexModule } from '@exomatique_editor/latex';
 	import { MdModule } from '@exomatique_editor/md';
 	import { SemanticModule, type SemanticVariant } from '@exomatique_editor/semantic';
 
-	let { data = $bindable(), editable = $bindable(false) }: { data: ExoData; editable?: boolean } =
-		$props();
+	let {
+		data = $bindable(),
+		editable = $bindable(false),
+		extra_modules = [],
+		provideContext = () => {}
+	}: {
+		data: ExoData;
+		editable?: boolean;
+		extra_modules?: IExoModule<any>[];
+		provideContext?: (editor: ExoEditor) => void;
+	} = $props();
 
 	const simple_variant = (
 		name: string,
@@ -37,9 +46,16 @@
 	];
 
 	const exo_editor = new ExoEditor({
-		modules: [new MdModule(), new SemanticModule(variants), new LatexModule(), new GraphModule()],
+		modules: extra_modules.concat([
+			new MdModule(),
+			new SemanticModule(variants),
+			new LatexModule(),
+			new GraphModule()
+		]),
 		default_module: 'md'
 	});
+
+	provideContext(exo_editor);
 </script>
 
 {#key editable}

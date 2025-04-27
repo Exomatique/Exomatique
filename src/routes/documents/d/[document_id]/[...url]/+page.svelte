@@ -8,10 +8,11 @@
 	import { type DocumentMeta } from '$lib/document';
 	import { user } from '../../../../../store';
 	import type { ExoData } from '@exomatique_editor/base';
-	import { read } from '$lib/file/distant_fs';
-	import type { PageFile } from '$lib/file/types';
+	import { getRootAddress, read } from '$lib/file/distant_fs';
+	import type { FileAddress, PageFile } from '$lib/file/types';
 	import { href } from '$lib/page/links';
 	import { resolvePageAddress } from '$lib/utils/link';
+	import NavigationModule from '$lib/editor/navigation/NavigationModule';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();
@@ -62,7 +63,14 @@
 					>
 				{/if}
 			</div>
-			<Editor bind:data />
+			<Editor
+				bind:data
+				extra_modules={[new NavigationModule()]}
+				provideContext={(editor) => {
+					editor.addContext('root', getRootAddress(document_id));
+					editor.addContext('resolver', (v: FileAddress) => href(v, false));
+				}}
+			/>
 		{:else}
 			<div class=" pr-2 pb-2">
 				<div class="flex w-full grow justify-center shadow-2xl">

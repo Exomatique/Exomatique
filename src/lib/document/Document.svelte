@@ -22,6 +22,7 @@
 	import type { PageData } from '$lib/page';
 	import { href } from '$lib/page/links';
 	import { resolvePageAddress } from '$lib/utils/link';
+	import NavigationModule from '$lib/editor/navigation/NavigationModule';
 
 	interface ComboboxData {
 		label: string;
@@ -397,10 +398,23 @@
 		<div class="bg-surface-900 w-2 p-1"></div>
 		<div
 			id="editor_pane"
-			class="m-2 h-full w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
+			class="m-2 max-h-dvh w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
 			{#if data !== undefined}
-				<Editor editable bind:data />
+				<Editor
+					editable
+					bind:data
+					extra_modules={[new NavigationModule()]}
+					provideContext={(editor) => {
+						editor.addContext(
+							'root',
+							getRootAddress(address.document_id),
+							editor.modules['navigation']
+						);
+
+						editor.addContext('resolver', (v: FileAddress) => href(v, true));
+					}}
+				/>
 			{:else}
 				<div class="flex h-full w-full justify-center">
 					<Loading size={'extra-large'} />
