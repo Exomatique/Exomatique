@@ -116,7 +116,7 @@
 
 		toaster.promise(
 			write(real_address, 'page', {
-				title: toBeSaved.title || '',
+				title: _page?.data.title || '',
 				content: data || []
 			} satisfies PageData).finally(() => (isSaving = false)),
 			{
@@ -140,6 +140,7 @@
 	}
 
 	let _document = $state(undefined as DocumentMeta | undefined);
+	let _page = $state(undefined as PageFile | undefined);
 
 	function loadPage() {
 		data = undefined;
@@ -171,6 +172,7 @@
 				if (!(unsafe_file as any satisfies PageFile)) throw new Error('File is not a page');
 
 				const file = unsafe_file as PageFile;
+				_page = file;
 
 				const trimmedToBeSaved = {
 					...file,
@@ -400,7 +402,12 @@
 			id="editor_pane"
 			class="m-2 max-h-dvh w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
-			{#if data !== undefined}
+			{#if data !== undefined && _page !== undefined}
+				<input
+					type="text"
+					bind:value={_page.data.title}
+					class="h4 mx-5 my-1 px-1 py-2 outline-none"
+				/>
 				<Editor
 					editable
 					bind:data
