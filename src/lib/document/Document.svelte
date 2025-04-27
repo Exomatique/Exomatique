@@ -7,7 +7,7 @@
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { mapNumberToVisiblity, type DocumentMeta } from './types';
 	import { user } from '../../store';
 	import type { ExoData } from '@exomatique_editor/base';
@@ -70,7 +70,7 @@
 
 	function resetSaveTimeout() {
 		if (saveTimeout) clearTimeout(saveTimeout);
-		if (document != null)
+		if (_document != null)
 			saveTimeout = setTimeout(() => {
 				// save(true);
 			}, 5000);
@@ -78,7 +78,7 @@
 
 	async function save(autosave?: boolean) {
 		const toBeSaved: Partial<DocumentMeta> = {
-			...document,
+			..._document,
 			...real_address,
 			title,
 			tags,
@@ -138,17 +138,17 @@
 		);
 	}
 
-	let document = $state(undefined as DocumentMeta | undefined);
+	let _document = $state(undefined as DocumentMeta | undefined);
 
 	function loadPage() {
 		data = undefined;
 
-		if (document?.id !== real_address.document_id) {
+		if (_document?.id !== real_address.document_id) {
 			get('/document', { document_id: real_address.document_id })
 				.then((v) => {
 					const document_meta = v.meta as DocumentMeta;
 
-					document = document_meta;
+					_document = document_meta;
 					title = document_meta.title;
 					tags = document_meta.tags;
 					icon = document_meta.icon;
@@ -230,17 +230,26 @@
 	let iconPopover = $state(false);
 
 	let root = $derived(getRootAddress(address.document_id));
+
+	afterNavigate(() => {
+		let v = document.getElementById('pane');
+		if (!v) return;
+		v.scrollIntoView({
+			block: 'end',
+			behavior: 'instant'
+		});
+	});
 </script>
 
 <Toaster {toaster}></Toaster>
 
-<div class="relative flex h-full flex-1 flex-col items-center">
-	{#if document !== undefined}
+<div id="document_pane" class="relative flex h-full flex-1 flex-col items-center">
+	{#if _document !== undefined}
 		<div
 			class="relative mt-5 mb-10 w-3/4 flex-row rounded-md bg-white text-neutral-950 scheme-light"
 		>
 			<div class="flex w-full grow justify-end gap-5 px-5 py-2">
-				{#key document?.visibility}
+				{#key _document?.visibility}
 					<button
 						title={visibility === '-1'
 							? m.private_description()
@@ -301,7 +310,7 @@
 										iconPopover = false;
 									}}
 									onQuit={() => (iconPopover = false)}
-									selected_icon={document?.icon}
+									selected_icon={_document?.icon}
 								/>
 							</article>
 						{/snippet}
@@ -381,12 +390,13 @@
 		</div>
 	{/if}
 
-	<div class="relative flex max-h-dvh w-full grow flex-row">
+	<div id="pane" class="relative flex min-h-dvh w-full grow flex-row">
 		<div class="w-1/4 rounded-md p-2">
 			<FileExplorer address={root} />
 		</div>
 		<div class="bg-surface-900 w-2 p-1"></div>
 		<div
+			id="editor_pane"
 			class="m-2 h-full w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
 			{#if data !== undefined}
