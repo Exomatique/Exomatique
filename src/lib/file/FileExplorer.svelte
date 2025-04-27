@@ -196,8 +196,8 @@
 	let nameError: boolean = $state(false);
 </script>
 
-<div class="flex flex-col">
-	<div class="bg-surface-800 flex w-full grow flex-row justify-around gap-2 rounded-t-md p-2">
+<div class="flex max-h-full flex-col">
+	<div class="bg-surface-800 mb-0.5 flex w-full flex-row justify-around gap-2 rounded-t-md p-2">
 		<Modal
 			open={openFileModal}
 			onOpenChange={(e) => {
@@ -363,7 +363,7 @@
 				</div>{/snippet}
 		</Modal>
 	</div>
-	<div class="flex w-full grow flex-col">
+	<div class="flex w-full shrink grow basis-auto flex-col overflow-y-auto">
 		{#key file}
 			{#if file && (file as any).data}
 				{#each (file as any).data as string[] as value}
@@ -382,5 +382,5 @@
 			{/if}
 		{/key}
 	</div>
-	<div class="bg-surface-800 min-h-1 rounded-b-md"></div>
+	<div class="bg-surface-800 mt-0.5 min-h-1 rounded-b-md"></div>
 </div>

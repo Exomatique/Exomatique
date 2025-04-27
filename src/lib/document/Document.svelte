@@ -248,8 +248,8 @@
 
 <div id="document_pane" class="relative flex h-full flex-1 flex-col items-center">
 	<div id="pane" class="relative flex min-h-dvh w-full grow flex-row">
-		<div class="bg-surface-900 flex min-h-0 w-1/4 flex-col rounded-md p-2">
-			<div class="mb-5 w-full">
+		<div class="bg-surface-900 m-2 flex h-dvh min-h-0 w-1/4 flex-col overflow-hidden rounded-md">
+			<div class="mb-5 flex w-full flex-col">
 				<input
 					class="h4 mx-7 my-2 w-full outline-none"
 					maxlength="128"
@@ -375,9 +375,11 @@
 				</div>
 			</div>
 
-			<FileExplorer address={root} />
+			<div class="shrink grow basis-auto overflow-y-auto">
+				<FileExplorer address={root} />
+			</div>
 
-			<div class="bg-surface 900 my-5 flex w-full flex-row gap-5">
+			<div class="bg-surface-900 my-5 flex w-full flex-row gap-5">
 				<a
 					class="btn bg-surface-600 hover:bg-surface-400 grow self-end"
 					href={href(address)}
