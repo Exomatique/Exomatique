@@ -3,7 +3,17 @@
 	import { onMount } from 'svelte';
 	import { get, lang, post } from '$lib/utils';
 	import * as m from '$lib/paraglide/messages.js';
-	import { Eye, Image, Network, Pen, Save, Trash, Trees } from '@lucide/svelte';
+	import {
+		Dot,
+		EllipsisVertical,
+		Eye,
+		Image,
+		Network,
+		Pen,
+		Save,
+		Trash,
+		Trees
+	} from '@lucide/svelte';
 	import { Toaster, createToaster } from '@skeletonlabs/skeleton-svelte';
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
@@ -242,13 +252,71 @@
 			behavior: 'instant'
 		});
 	});
+
+	let container: HTMLElement;
+	let dragHandle: HTMLElement;
+	let leftPanel: HTMLElement;
+	let rightPanel: HTMLElement;
+
+	onMount(() => {
+		let isDragging = false;
+		dragHandle.addEventListener('mousedown', (e) => {
+			isDragging = true;
+			document.body.style.cursor = 'col-resize';
+			document.body.style.userSelect = 'none';
+		});
+
+		dragHandle.addEventListener('dblclick', (e) => {
+			leftPanel.style.width = `${25}%`;
+			rightPanel.style.width = `${75}%`;
+		});
+
+		document.addEventListener('mouseup', (e) => {
+			isDragging = false;
+			document.body.style.cursor = 'default';
+			document.body.style.userSelect = '';
+		});
+
+		document.addEventListener('mousemove', (e) => {
+			if (!isDragging) return;
+
+			const containerRect = container.getBoundingClientRect();
+			let offsetX = e.clientX - containerRect.left;
+			const containerWidth = containerRect.width;
+
+			// Prevent extreme values
+			const minWidth = 400; // px
+			const maxWidth = containerWidth - 400;
+
+			if (offsetX < minWidth) {
+				if (offsetX / containerWidth < 0.05) {
+					offsetX = 0;
+				} else offsetX = minWidth;
+			}
+
+			if (offsetX > maxWidth) {
+				if (offsetX / containerWidth > 0.95) {
+					offsetX = containerWidth;
+				} else offsetX = containerWidth - 400;
+			}
+
+			const leftPanelWidthPercent = (offsetX / containerWidth) * 100;
+			const rightPanelWidthPercent = 100 - leftPanelWidthPercent;
+
+			leftPanel.style.width = `${leftPanelWidthPercent}%`;
+			rightPanel.style.width = `${rightPanelWidthPercent}%`;
+		});
+	});
 </script>
 
 <Toaster {toaster}></Toaster>
 
 <div id="document_pane" class="relative flex h-full flex-1 flex-col items-center">
-	<div id="pane" class="relative flex min-h-dvh w-full grow flex-row">
-		<div class="bg-surface-900 m-2 flex h-dvh min-h-0 w-1/4 flex-col overflow-hidden rounded-md">
+	<div bind:this={container} id="pane" class="relative flex min-h-dvh w-full grow flex-row">
+		<div
+			bind:this={leftPanel}
+			class="bg-surface-900 m-2 flex h-dvh min-h-0 w-1/4 flex-col overflow-hidden rounded-md"
+		>
 			<div class="mb-5 flex w-full flex-col">
 				<input
 					class="h4 mx-7 my-2 w-full outline-none"
@@ -402,8 +470,14 @@
 				</button>
 			</div>
 		</div>
-		<div class="bg-surface-900 w-2 p-1"></div>
 		<div
+			bind:this={dragHandle}
+			class="bg-surface-900 flex cursor-col-resize flex-col justify-center"
+		>
+			<EllipsisVertical />
+		</div>
+		<div
+			bind:this={rightPanel}
 			id="editor_pane"
 			class="m-2 max-h-dvh w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
