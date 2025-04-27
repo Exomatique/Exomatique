@@ -109,8 +109,8 @@
 			auto_saved_description: undefined
 		};
 
-		await Promise.all(Object.keys(langs).map(async (v, i) => [v, (await lang(v)) || v])).then(
-			(list) => list.forEach(([v, lang_value]) => ((langs as any)[v] = lang_value))
+		await Promise.all(Object.keys(langs).map(async (v) => [v, (await lang(v)) || v])).then((list) =>
+			list.forEach(([v, lang_value]) => ((langs as any)[v] = lang_value))
 		);
 
 		toaster.promise(
@@ -228,6 +228,8 @@
 	}
 
 	let iconPopover = $state(false);
+
+	let root = $derived(getRootAddress(address.document_id));
 </script>
 
 <Toaster {toaster}></Toaster>
@@ -245,7 +247,7 @@
 							: visibility === '0'
 								? m.protected_description()
 								: m.public_description()}
-						onclick={(e) => {
+						onclick={() => {
 							if (visibility === '-1') visibility = '1';
 							else if (visibility === '1') visibility = '0';
 							else visibility = '-1';
@@ -381,7 +383,7 @@
 
 	<div class="relative flex max-h-dvh w-full grow flex-row">
 		<div class="w-1/4 rounded-md p-2">
-			<FileExplorer address={getRootAddress(address.document_id)} />
+			<FileExplorer address={root} />
 		</div>
 		<div class="bg-surface-900 w-2 p-1"></div>
 		<div

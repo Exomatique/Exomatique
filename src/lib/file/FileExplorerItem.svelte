@@ -30,24 +30,31 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { simplifyPageAddress } from '$lib/utils/link';
+	import type { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		address,
 		cache,
 		selected = $bindable(),
-		updater = $bindable(0)
+		updater = $bindable(0),
+		collapsing_map
 	}: {
 		address: FileAddress;
 		updater: number;
 		cache: FileCache;
 		selected: FileAddress | undefined;
+		collapsing_map: SvelteMap<string, boolean>;
 	} = $props();
 
 	let file: FileMeta | undefined = $state();
 	let name: string = getFileName(address);
 	let children: string[] | undefined = $state();
-	let collaspsed: boolean = $state(true);
+	let collapsed = $derived.by(() => {
+		let value = collapsing_map.get(address.path);
 
+		if (value === null) return true;
+		return value;
+	});
 	onMount(async () => {
 		file = cache.get(address.path);
 		if (!file) {
@@ -63,7 +70,7 @@
 			(selected.path + '/').startsWith(address.path + '/') &&
 			selected.path !== address.path
 		) {
-			collaspsed = false;
+			collapsing_map.set(address.path, false);
 		}
 	});
 
@@ -97,7 +104,7 @@
 	onclick={() => (selected = address)}
 >
 	{#if isDirAddress(address)}
-		{#if collaspsed}
+		{#if collapsed}
 			<ChevronRight size={16} />
 		{:else}
 			<ChevronDown size={16} />
@@ -109,7 +116,7 @@
 	{#if isDirAddress(address)}
 		<button
 			class="block grow text-start"
-			onclick={() => (collaspsed = !collaspsed)}
+			onclick={() => collapsing_map.set(address.path, !collapsed)}
 			disabled={file?.type === undefined}>{name}</button
 		>
 	{:else if file?.type === undefined}
@@ -164,15 +171,18 @@
 	{/if}
 </div>
 
-{#if file?.type === 'directory' && children && !collaspsed}
-	<div class="relative ml-8">
-		{#each children as child}
-			<FileExplorerItem
-				bind:selected
-				bind:updater
-				{cache}
-				address={getChildAddress(address, child)}
-			/>
-		{/each}
-	</div>
-{/if}
+{#key collapsed}
+	{#if file?.type === 'directory' && children && !collapsed}
+		<div class="relative ml-8">
+			{#each children as child}
+				<FileExplorerItem
+					bind:selected
+					bind:updater
+					{cache}
+					{collapsing_map}
+					address={getChildAddress(address, child)}
+				/>
+			{/each}
+		</div>
+	{/if}
+{/key}

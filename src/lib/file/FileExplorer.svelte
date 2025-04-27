@@ -18,11 +18,13 @@
 	import { ArrowDownUp, FilePlus, FolderPlus } from '@lucide/svelte';
 	import { Modal } from '@skeletonlabs/skeleton-svelte';
 	import type { ExtraPageMetadata, PageData } from '$lib/page';
-	import { resolvePageAddress } from '$lib/utils/link';
+	import { resolvePageAddress, simplifyPageAddress } from '$lib/utils/link';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { address }: { address: FileAddress } = $props();
 
 	let cache: FileCache = new Map<string, FileMeta>();
+	let collapsing_map = new SvelteMap<string, boolean>();
 	let file: FileMeta | undefined = $state();
 	let selected: FileAddress | undefined = $state();
 
@@ -30,19 +32,21 @@
 
 	onMount(async () => {
 		file = cache.get(address.path);
-		if (!file) {
-			file = await read(address, 'directory');
-			if (file) cache.set(address.path, file);
-		}
+		await refresh();
 	});
+
+	function refresh() {
+		return read(address, 'directory').then((value) => {
+			if (JSON.stringify(value) === JSON.stringify(file)) return;
+			file = value;
+			if (value) cache.set(address.path, value);
+		});
+	}
 
 	$effect(() => {
 		updater;
 
-		read(address, 'directory').then((v) => {
-			file = v;
-			if (v) cache.set(address.path, v);
-		});
+		refresh();
 	});
 
 	async function onNewFile(filePath: string) {
@@ -77,8 +81,7 @@
 			cache.delete(parent.substring(0, parent.length - 1));
 
 			if (parent === '/') {
-				file = await read(address, 'directory');
-				if (file) cache.set(address.path, file);
+				await refresh();
 			}
 			selected = fileAddress;
 			updater += 1;
@@ -102,8 +105,7 @@
 				cache.delete(parent.substring(0, parent.length - 1));
 
 				if (parent === '/') {
-					file = await read(address, 'directory');
-					if (file) cache.set(address.path, file);
+					await refresh();
 				}
 
 				selected = folderAddress;
@@ -172,8 +174,7 @@
 			cache.delete(target_parent.substring(0, target_parent.length - 1));
 
 			if (parent === '/' || target_parent === '/') {
-				file = await read(address, 'directory');
-				if (file) cache.set(address.path, file);
+				await refresh();
 			}
 
 			selected = { document_id: address.document_id, path: targetPath };
@@ -200,7 +201,7 @@
 		<Modal
 			open={openFileModal}
 			onOpenChange={(e) => {
-				fileNameInput = selected?.path || '/';
+				fileNameInput = simplifyPageAddress(selected || getRootAddress(address.document_id)).path;
 				openFileModal = e.open;
 				nameError = false;
 			}}
@@ -293,7 +294,7 @@
 		<Modal
 			open={openMoveModal}
 			onOpenChange={(e) => {
-				fileNameInput = selected?.path || '/';
+				fileNameInput = simplifyPageAddress(selected || getRootAddress(address.document_id)).path;
 				openMoveModal = e.open;
 				nameError = false;
 				overrideIndex = false;
@@ -369,6 +370,7 @@
 					<FileExplorerItem
 						bind:updater
 						bind:selected
+						{collapsing_map}
 						{cache}
 						address={getChildAddress(address, value)}
 					/>
