@@ -157,13 +157,13 @@ export async function read(address: FileAddress): Promise<File | undefined> {
 
 		const time = new Date().getTime();
 
-		const data = await client.get(cwd + '/' + file_path);
+		const data = await client.get(cwd + '/' + file_path).then((v) => v.toString());
 		if (!data) {
 			return undefined;
 		}
 		const file: File = {
 			...meta,
-			data: JSON.parse(data.toString())
+			data: JSON.parse(data)
 		};
 		return file;
 	});
