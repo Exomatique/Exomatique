@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { afterNavigate, goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import DocumentEditor from '$lib/document/DocumentEditor.svelte';
-	import Document from '$lib/document/DocumentEditor.svelte';
 
 	/** @type {import('./$types').PageProps} */
 	let { data = $bindable() } = $props();
