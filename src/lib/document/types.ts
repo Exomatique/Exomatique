@@ -18,7 +18,7 @@ export interface DocumentMeta {
 export const default_icon: IconMeta = {
 	library: 'lucide',
 	value: 'Image',
-	numbering: 10
+	numbering: undefined
 };
 
 export function mapVisibilityToNumber(visibility: DocumentVisibility) {

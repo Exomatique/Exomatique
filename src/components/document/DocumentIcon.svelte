@@ -6,7 +6,7 @@
 		icon,
 		size,
 		backgroundColor = 'white'
-	}: { icon: IconMeta; size: number; backgroundColor: string } = $props();
+	}: { icon: IconMeta; size: number; backgroundColor?: string } = $props();
 </script>
 
 <div class="relative h-fit w-fit">

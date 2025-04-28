@@ -18,7 +18,7 @@
 	import { Popover } from '@skeletonlabs/skeleton-svelte';
 	import IconX from '@lucide/svelte/icons/x';
 	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
-	import { mapNumberToVisiblity, type DocumentMeta } from './types';
+	import { default_icon, mapNumberToVisiblity, type DocumentMeta } from './types';
 	import { user } from '../../store';
 	import type { ExoData } from '@exomatique_editor/base';
 	import Editor from './Editor.svelte';
@@ -59,6 +59,7 @@
 	let visibility = $state('1');
 	let data: ExoData | undefined = $state(undefined);
 	let title: string | undefined = $state('');
+	let page_icon: IconMeta | undefined = $state(undefined);
 
 	let isSaving = $state(false);
 	let lastSaved = $state(new Date().getTime());
@@ -129,7 +130,8 @@
 		toaster.promise(
 			write(real_address, 'page', {
 				title: _page?.data.title || '',
-				content: data || []
+				content: data || [],
+				icon: page_icon
 			} satisfies PageData).finally(() => (isSaving = false)),
 			{
 				loading: {
@@ -243,6 +245,7 @@
 	}
 
 	let iconPopover = $state(false);
+	let pageIconPopover = $state(false);
 
 	let root = $derived(getRootAddress(address.document_id));
 
@@ -484,11 +487,38 @@
 			class="m-2 max-h-dvh w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
 			{#if data !== undefined && _page !== undefined}
-				<input
-					type="text"
-					bind:value={_page.data.title}
-					class="h4 mx-5 my-1 px-1 py-2 outline-none"
-				/>
+				<div class="mx-5 flex flex-row">
+					<Popover open={pageIconPopover}>
+						{#snippet trigger()}
+							<button onclick={() => (pageIconPopover = true)}>
+								<DocumentIcon
+									icon={_page?.data.icon || default_icon}
+									backgroundColor="white"
+									size={96}
+								/>
+							</button>
+						{/snippet}
+
+						{#snippet content()}
+							<article class="flex justify-between">
+								<IconPicker
+									onSubmit={(v) => {
+										if (_page) _page.data.icon = v;
+										pageIconPopover = false;
+									}}
+									onQuit={() => (pageIconPopover = false)}
+									selected_icon={_page?.data.icon}
+								/>
+							</article>
+						{/snippet}
+					</Popover>
+
+					<input
+						type="text"
+						bind:value={_page.data.title}
+						class="h4 mx-5 my-1 px-1 py-2 outline-none"
+					/>
+				</div>
 				<Editor
 					editable
 					bind:data

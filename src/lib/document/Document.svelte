@@ -3,7 +3,7 @@
 	import Editor from '$lib/document/Editor.svelte';
 	import { get } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { type DocumentMeta } from '$lib/document';
+	import { default_icon, type DocumentMeta } from '$lib/document';
 	import type { ExoData } from '@exomatique_editor/base';
 	import { getRootAddress, read } from '$lib/file/distant_fs';
 	import type { FileAddress, PageFile } from '$lib/file/types';
@@ -14,6 +14,9 @@
 	import { MdModule } from '@exomatique_editor/md';
 	import Loading from '../../components/Loading.svelte';
 	import { user } from '../../store';
+	import type { IconMeta } from '$lib/types';
+	import Icon from '../../components/Icon.svelte';
+	import DocumentIcon from '../../components/document/DocumentIcon.svelte';
 
 	/** @type {import('./$types').PageProps} */
 	let {
@@ -30,6 +33,7 @@
 	let data: ExoData | undefined = $state(undefined);
 	let real_address = $derived.by(() => resolvePageAddress(address));
 	let title = $state('');
+	let icon: IconMeta | undefined = $state(undefined);
 
 	function updateAState() {
 		Array(...document.getElementsByTagName('a'))
@@ -50,7 +54,7 @@
 			get('/document', { document_id: address.document_id })
 				.then((v) => {
 					if (setcurrent) _document = v.meta as DocumentMeta;
-					document_map.set(v.meta.id, v);
+					document_map.set(v.meta.id, v.meta);
 				})
 				.catch((e) => {
 					if (setcurrent) goto('/documents/error');
@@ -61,6 +65,7 @@
 			if (setcurrent) {
 				data = cache_page.data.content;
 				title = cache_page.data.title;
+				icon = cache_page.data.icon || default_icon;
 				setTimeout(updateAState, 20);
 			}
 		} else
@@ -110,12 +115,22 @@
 		class="absolute w-3/4 grow flex-row bg-white text-neutral-950 scheme-light"
 	>
 		{#if data}
-			<div class="flex w-full grow justify-end px-5 py-2">
-				<h5 class="h5 mx-5 w-full px-2">{title}</h5>
-
+			<div class="flex w-full grow items-center justify-center px-5 py-2">
+				<div class="flex flex-row items-center gap-5 select-none">
+					<div class="flex flex-row items-center gap-2">
+						<DocumentIcon icon={_document?.icon || default_icon} size={32} />
+						<h4 class="h5 h-fit align-text-bottom text-nowrap">{_document?.title || ''}</h4>
+					</div>
+					<h4 class="h5 text-end text-nowrap">/</h4>
+					<div class="text-surface-400 flex flex-row items-center gap-2">
+						<DocumentIcon icon={icon || default_icon} size={32} />
+						<h5 class="h5 text-nowrap">{title}</h5>
+					</div>
+				</div>
+				<div class="flex grow"></div>
 				{#if _document && _document.authorId === $user?.id}
 					<a
-						class="btn bg-surface-200 hover:bg-surface-400 self-end"
+						class="btn bg-surface-200 hover:bg-surface-400 h-fit w-fit self-end"
 						href={href(real_address, true)}>Edit</a
 					>
 				{/if}
