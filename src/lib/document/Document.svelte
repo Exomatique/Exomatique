@@ -108,6 +108,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Viewing : {title} IN {_document?.title || ''}</title>
+</svelte:head>
+
 <div class="relative flex h-full flex-1 justify-center">
 	<div
 		bind:this={contentPane}

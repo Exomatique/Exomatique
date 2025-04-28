@@ -316,6 +316,10 @@
 
 <Toaster {toaster}></Toaster>
 
+<svelte:head>
+	<title>Editing : {_page?.data.title || ''} IN {_document?.title || ''}</title>
+</svelte:head>
+
 <div id="document_pane" class="relative flex h-full flex-1 flex-col items-center">
 	<div bind:this={container} id="pane" class="relative flex min-h-dvh w-full grow flex-row">
 		<div
