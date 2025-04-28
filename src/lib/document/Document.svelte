@@ -33,6 +33,8 @@
 	import { href } from '$lib/page/links';
 	import { resolvePageAddress } from '$lib/utils/link';
 	import NavigationModule from '$lib/editor/navigation/NavigationModule';
+	import { MdModule } from '@exomatique_editor/md';
+	import fileLinkExtension from '$lib/editor/markdown/FileLinkExtension';
 
 	interface ComboboxData {
 		label: string;
@@ -499,6 +501,22 @@
 						);
 
 						editor.addContext('resolver', (v: FileAddress) => href(v, true));
+
+						const MdModule = editor.modules['md'] as MdModule;
+
+						MdModule.extra_plugins.push({
+							type: 'remark',
+							plugin: () =>
+								fileLinkExtension((v: string) =>
+									href(
+										{
+											document_id: address.document_id,
+											path: v
+										},
+										true
+									)
+								)
+						});
 					}}
 				/>
 			{:else}

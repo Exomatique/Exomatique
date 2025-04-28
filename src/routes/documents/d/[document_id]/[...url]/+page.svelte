@@ -13,6 +13,8 @@
 	import { href } from '$lib/page/links';
 	import { resolvePageAddress } from '$lib/utils/link';
 	import NavigationModule from '$lib/editor/navigation/NavigationModule';
+	import fileLinkExtension from '$lib/editor/markdown/FileLinkExtension';
+	import { MdModule } from '@exomatique_editor/md';
 
 	/** @type {import('./$types').PageProps} */
 	let { data: fetch } = $props();
@@ -69,6 +71,22 @@
 				provideContext={(editor) => {
 					editor.addContext('root', getRootAddress(document_id));
 					editor.addContext('resolver', (v: FileAddress) => href(v, false));
+
+					const MdModule = editor.modules['md'] as MdModule;
+
+					MdModule.extra_plugins.push({
+						type: 'remark',
+						plugin: () =>
+							fileLinkExtension((v: string) =>
+								href(
+									{
+										document_id: address.document_id,
+										path: v
+									},
+									false
+								)
+							)
+					});
 				}}
 			/>
 		{:else}

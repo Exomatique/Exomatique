@@ -60,7 +60,7 @@
 		"@exomatique_editor/base": "^1.1.4",
 		"@exomatique_editor/graph": "^1.0.0",
 		"@exomatique_editor/latex": "^1.0.0",
-		"@exomatique_editor/md": "^1.0.0",
+		"@exomatique_editor/md": "^1.1.1",
 		"@exomatique_editor/semantic": "^1.0.0",
 		"@inlang/paraglide-sveltekit": "^0.15.5",
 		"@libsql/client": "^0.14.0",
@@ -76,7 +76,9 @@
 		"@zag-js/svelte": "^1.4.0",
 		"animejs": "^4.0.1",
 		"async-mutex": "^0.5.0",
+		"hast": "^0.0.2",
 		"panzoom": "^9.4.3",
-		"ssh2-sftp-client": "^11.0.0"
+		"ssh2-sftp-client": "^11.0.0",
+		"unified": "^11.0.5"
 	}
 }
