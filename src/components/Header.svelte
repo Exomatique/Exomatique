@@ -47,9 +47,9 @@
 </script>
 
 {#key languageTag()}
-	<div class="header bg-surface-900 items-center gap-5">
-		<a href="/"><Icon size={'extra-small'} /></a>
-		<div class="grow justify-evenly">
+	<div class="header bg-surface-900 flex flex-row flex-wrap items-center gap-5">
+		<a class="min-w-[64px] flex-[0_1_auto]" href="/"><Icon size={'extra-small'} /></a>
+		<div class="flex-[1_1_0%] flex-row flex-wrap items-center justify-evenly">
 			{#each pages as page}
 				<div
 					class={`${page.value !== selected ? 'mb-1 hover:mb-0' : ''}`}
@@ -65,19 +65,21 @@
 				</div>
 			{/each}
 		</div>
-		<div class="flex gap-5">
-			{#if user}
-				<span class="welcome">
-					{m.welcome()} <b>{user.name}</b>!
-				</span>
-				<LogoutButton {onLogout} />
-			{:else}
-				<LoginButton {onLogin} />
-				<RegisterButton {onRegister} />
-			{/if}
-		</div>
+		<div class="flex min-w-[150px] flex-[0_1_auto] items-center justify-center gap-5">
+			<div class="flex items-center justify-center gap-5">
+				{#if user}
+					<span class="welcome">
+						{m.welcome()} <b>{user.name}</b>!
+					</span>
+					<LogoutButton {onLogout} />
+				{:else}
+					<LoginButton {onLogin} />
+					<RegisterButton {onRegister} />
+				{/if}
+			</div>
 
-		<button class="text-xl" onclick={onLanguageChange}>{lang == 'en' ? '🇬🇧' : '🇫🇷'}</button>
+			<button class="text-xl" onclick={onLanguageChange}>{lang == 'en' ? '🇬🇧' : '🇫🇷'}</button>
+		</div>
 	</div>
 {/key}
 

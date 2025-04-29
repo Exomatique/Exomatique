@@ -59,8 +59,10 @@
 </script>
 
 <div class="relative flex flex-col gap-5 p-5">
-	<div class="relative flex flex-row items-center gap-5">
-		<div class="bg-surface-900 flex flex-1 flex-row items-center gap-5 rounded-2xl p-5 text-lg">
+	<div class="relative flex flex-row flex-wrap items-center gap-5">
+		<div
+			class="bg-surface-900 flex min-w-sm flex-1 flex-row flex-wrap items-center gap-5 rounded-2xl p-5 text-lg"
+		>
 			<input
 				class="ig-input input max-w-md shrink grow-0 outline-none"
 				placeholder={m.title()}
@@ -68,21 +70,23 @@
 				bind:value={filterInput}
 			/>
 
-			<button class="btn bg-surface-800" onclick={() => onSearch()} disabled={isSearching}>
-				<Search />
-			</button>
+			<div class="flex flex-row flex-nowrap items-center gap-2">
+				<button class="btn bg-surface-800 py-2" onclick={() => onSearch()} disabled={isSearching}>
+					<Search />
+				</button>
 
-			<div class="max-w-md">
-				<Combobox
-					data={tagsData || []}
-					multiple
-					bind:value={filterTags}
-					bind:chipContainer={container}
-				/>
-			</div>
+				<div class="max-w-md">
+					<Combobox
+						data={tagsData || []}
+						multiple
+						bind:value={filterTags}
+						bind:chipContainer={container}
+					/>
+				</div>
 
-			<div class="flex flex-1">
-				<div class="max-h-10 overflow-scroll" bind:this={container}></div>
+				<div class="flex flex-1 items-center justify-center">
+					<div class="max-h-10 overflow-scroll" bind:this={container}></div>
+				</div>
 			</div>
 		</div>
 
@@ -105,7 +109,7 @@
 			</div>
 		{:else}
 			<div
-				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-col items-center gap-5 rounded-2xl p-5"
+				class="bg-surface-800 flex h-full w-2/3 flex-1/3 flex-row flex-wrap items-center gap-5 rounded-2xl p-5"
 			>
 				{#if documents.length > 0}
 					{#each documents as exo}
