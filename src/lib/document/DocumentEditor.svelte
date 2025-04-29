@@ -35,6 +35,7 @@
 	import NavigationModule from '$lib/editor/navigation/NavigationModule';
 	import { MdModule } from '@exomatique_editor/md';
 	import fileLinkExtension from '$lib/editor/markdown/FileLinkExtension';
+	import { updated } from '$app/state';
 
 	interface ComboboxData {
 		label: string;
@@ -42,9 +43,6 @@
 	}
 
 	let tagsData: ComboboxData[] | undefined = $state(undefined);
-
-	let tags: string[] = $state([]);
-	let icon: IconMeta | undefined = $state();
 
 	let {
 		address = $bindable(),
@@ -56,61 +54,49 @@
 
 	let real_address = $derived.by(() => resolvePageAddress(address));
 
-	let visibility = $state('1');
-	let data: ExoData | undefined = $state(undefined);
-	let title: string | undefined = $state('');
-	let page_icon: IconMeta | undefined = $state(undefined);
-
 	let isSaving = $state(false);
 	let lastSaved = $state(new Date().getTime());
 
 	let saveTimeout: NodeJS.Timeout | undefined;
 
-	let lastSavedRaw = JSON.stringify({});
-	$effect(() => {
-		let post_data = {
-			real_address,
-			data,
-			title,
-			tags,
-			icon,
-			visibility: Number.parseInt(visibility)
-		};
+	let lastSavedPage = JSON.stringify({});
+	let lastSavedDocument = JSON.stringify({});
 
-		// Use post_data to prevent editor error
-		post_data;
+	let _document = $state(undefined as DocumentMeta | undefined);
+	let _page = $state(undefined as PageFile | undefined);
+
+	$effect(() => {
+		// Use data to have svelte call effect when they are updated
+		_page?.data.title;
+		_page?.data.content;
+		_page?.data.icon;
+		_document?.icon;
+		_document?.tags;
+		_document?.visibility;
+		_document?.title;
+
 		resetSaveTimeout();
 	});
 
 	function resetSaveTimeout() {
 		if (saveTimeout) clearTimeout(saveTimeout);
-		if (_document != null)
-			saveTimeout = setTimeout(() => {
-				// save(true);
-			}, 5000);
+		saveTimeout = setTimeout(() => {
+			save(true);
+		}, 10000);
 	}
 
 	async function save(autosave?: boolean) {
-		const toBeSaved: Partial<DocumentMeta> = {
+		if (!_page || !_document) return;
+
+		const trimmedPage = JSON.stringify({
+			..._page,
+			updated: undefined
+		});
+
+		const trimmedDocument = JSON.stringify({
 			..._document,
-			...real_address,
-			title,
-			tags,
-			icon,
-			visibility: mapNumberToVisiblity(Number.parseInt(visibility))
-		};
-
-		const trimmedToBeSaved = {
-			...toBeSaved,
-			updated: undefined,
-			data: JSON.stringify(data)
-		};
-
-		if (JSON.stringify(trimmedToBeSaved) === lastSavedRaw) return;
-		lastSavedRaw = JSON.stringify(trimmedToBeSaved);
-
-		lastSaved = new Date().getTime();
-		isSaving = true;
+			updated: undefined
+		});
 
 		const langs = {
 			save_fail: undefined,
@@ -127,12 +113,36 @@
 			list.forEach(([v, lang_value]) => ((langs as any)[v] = lang_value))
 		);
 
+		isSaving = true;
+		const tasks = [
+			lastSavedPage !== trimmedPage
+				? write(real_address, 'page', _page.data satisfies PageData).then((page) => {
+						lastSavedPage = JSON.stringify({
+							...page,
+							updated: undefined
+						});
+					})
+				: undefined,
+
+			lastSavedDocument !== trimmedDocument
+				? post('/document', { meta: _document }).then((document) => {
+						lastSavedDocument = JSON.stringify({
+							...document,
+							updated: undefined
+						});
+					})
+				: undefined
+		].filter((v) => v !== undefined);
+
+		if (tasks.length === 0) {
+			isSaving = false;
+			return;
+		}
+
+		lastSaved = new Date().getTime();
+
 		toaster.promise(
-			write(real_address, 'page', {
-				title: _page?.data.title || '',
-				content: data || [],
-				icon: page_icon
-			} satisfies PageData).finally(() => (isSaving = false)),
+			Promise.all(tasks).finally(() => (isSaving = false)),
 			{
 				loading: {
 					title: langs.saving,
@@ -153,55 +163,47 @@
 		);
 	}
 
-	let _document = $state(undefined as DocumentMeta | undefined);
-	let _page = $state(undefined as PageFile | undefined);
-
 	function loadPage() {
-		data = undefined;
-
 		if (_document?.id !== real_address.document_id) {
 			get('/document', { document_id: real_address.document_id })
 				.then((v) => {
 					const document_meta = v.meta as DocumentMeta;
 
 					_document = document_meta;
-					title = document_meta.title;
-					tags = document_meta.tags;
-					icon = document_meta.icon;
-					visibility = document_meta.visibility;
+					const savedDocument = {
+						..._document,
+						updated: undefined
+					} satisfies Partial<DocumentMeta>;
+					lastSavedDocument = JSON.stringify(savedDocument);
+					resetSaveTimeout();
 				})
 				.catch((e) => {
 					console.error(e);
 					onFetchFail();
 				});
-
-			get('/tags').then((v) => {
-				tagsData = v.data as ComboboxData[];
-			});
 		}
+
+		get('/tags').then((v) => {
+			tagsData = v.data as ComboboxData[];
+		});
 
 		read(real_address, 'page')
 			.then((unsafe_file) => {
 				if (!unsafe_file) throw new Error('File not found');
 				if (!(unsafe_file as any satisfies PageFile)) throw new Error('File is not a page');
 
-				const file = unsafe_file as PageFile;
-				_page = file;
+				_page = unsafe_file as PageFile;
 
-				const trimmedToBeSaved = {
-					...file,
-					updated: undefined,
-					data: JSON.stringify(file.data)
-				};
-				lastSavedRaw = JSON.stringify(trimmedToBeSaved);
-
-				data = file.data.content;
+				const savedPage = {
+					..._page,
+					updated: undefined
+				} satisfies Partial<PageFile>;
+				lastSavedPage = JSON.stringify(savedPage);
 
 				resetSaveTimeout();
 			})
 			.catch((e) => {
 				console.error(e);
-
 				onFetchFail();
 			});
 	}
@@ -224,7 +226,7 @@
 	}
 
 	async function deleteDocument() {
-		if (deletionConfirmText !== title) return;
+		if (deletionConfirmText !== _document?.title) return;
 		await post('/document/delete', real_address).finally(() => goto('/documents'));
 	}
 
@@ -237,17 +239,22 @@
 	let filtered = $derived(
 		((tagsData as any as ComboboxData[]) || [])
 			.filter((v) => v.label.toLocaleLowerCase().startsWith(filterTag.toLowerCase()))
-			.filter((v) => !tags.includes(v.value))
+			.filter((v) => !_document?.tags.includes(v.value))
 	);
 
 	function onChoice(choice_index: number) {
-		tags.push(filtered[choice_index].value);
+		if (!_document) return;
+		_document.tags.push(filtered[choice_index].value);
 	}
 
 	let iconPopover = $state(false);
 	let pageIconPopover = $state(false);
 
 	let root = $derived(getRootAddress(address.document_id));
+
+	beforeNavigate(() => {
+		save(true);
+	});
 
 	afterNavigate(() => {
 		let v = document.getElementById('pane');
@@ -327,19 +334,21 @@
 			class="bg-surface-900 m-2 flex h-dvh min-h-0 w-1/4 flex-col overflow-hidden rounded-md"
 		>
 			<div class="mb-5 flex w-full flex-col">
-				<input
-					class="h4 mx-7 my-2 w-full outline-none"
-					maxlength="128"
-					type="text"
-					bind:value={title}
-				/>
+				{#if _document}
+					<input
+						class="h4 mx-7 my-2 w-full outline-none"
+						maxlength="128"
+						type="text"
+						bind:value={_document.title}
+					/>
+				{/if}
 				<div class="flex flex-row">
 					<div class="h-fil mx-5 w-fit">
 						<Popover open={iconPopover}>
 							{#snippet trigger()}
 								<button onclick={() => (iconPopover = true)}>
 									<DocumentIcon
-										icon={icon || {
+										icon={_document?.icon || {
 											library: 'lucide',
 											value: 'Image'
 										}}
@@ -353,7 +362,8 @@
 								<article class="flex justify-between">
 									<IconPicker
 										onSubmit={(v) => {
-											icon = v;
+											if (!_document) return;
+											_document.icon = v;
 											iconPopover = false;
 										}}
 										onQuit={() => (iconPopover = false)}
@@ -365,25 +375,29 @@
 					</div>
 					<div class="mt-2">
 						<div class="flex w-full grow flex-wrap justify-start gap-1">
-							<button
-								title={visibility === '-1'
-									? m.private_description()
-									: visibility === '0'
-										? m.protected_description()
-										: m.public_description()}
-								onclick={() => {
-									if (visibility === '-1') visibility = '1';
-									else if (visibility === '1') visibility = '0';
-									else visibility = '-1';
-								}}
-							>
-								<VisibilityBadge value={mapNumberToVisiblity(Number.parseInt(visibility))} />
-							</button>
-							{#each (tagsData || []).filter((v) => tags.includes(v.value)) as tag}
+							{#if _document}
+								<button
+									title={_document.visibility === 'PRIVATE'
+										? m.private_description()
+										: _document.visibility === 'PUBLIC'
+											? m.protected_description()
+											: m.public_description()}
+									onclick={() => {
+										if (!_document) return;
+										if (_document.visibility === 'PRIVATE') _document.visibility = 'PROTECTED';
+										else if (_document.visibility === 'PUBLIC') _document.visibility = 'PRIVATE';
+										else _document.visibility = 'PUBLIC';
+									}}
+								>
+									<VisibilityBadge value={_document.visibility} />
+								</button>
+							{/if}
+							{#each (tagsData || []).filter((v) => _document?.tags.includes(v.value)) as tag}
 								<button
 									class="button btn-base chip preset-filled h-fit"
 									onclick={() => {
-										tags = tags.filter((v) => tag.value !== v);
+										if (!_document) return;
+										_document.tags = _document.tags.filter((v) => tag.value !== v);
 									}}>{tag.label} x</button
 								>
 							{/each}
@@ -490,7 +504,7 @@
 			id="editor_pane"
 			class="m-2 max-h-dvh w-3/4 overflow-scroll rounded-md bg-white p-2 py-4 text-neutral-950 scheme-light"
 		>
-			{#if data !== undefined && _page !== undefined}
+			{#if _page !== undefined}
 				<div class="mx-5 flex flex-row">
 					<Popover open={pageIconPopover}>
 						{#snippet trigger()}
@@ -525,7 +539,7 @@
 				</div>
 				<Editor
 					editable
-					bind:data
+					bind:data={_page.data.content}
 					extra_modules={[new NavigationModule()]}
 					provideContext={(editor) => {
 						editor.addContext(
@@ -562,7 +576,7 @@
 	</div>
 </div>
 
-{#if deletePopoverState}
+{#if deletePopoverState && _document}
 	<div
 		class="bg-surface-950 absolute top-0 left-0 flex h-full w-full flex-1 items-center justify-center opacity-90"
 	>
@@ -593,20 +607,20 @@
 					<div class="mt-2 flex flex-row items-center gap-5">
 						<input
 							class="input bg-surface-950 text-red-500 outline-none selection:outline-none placeholder:text-red-400 placeholder:opacity-50"
-							placeholder={title}
+							placeholder={_document?.title}
 							bind:value={deletionConfirmText}
 						/>
 
 						<button
 							class="btn m-2 border-2 border-red-600"
-							disabled={deletionConfirmText !== title}
+							disabled={deletionConfirmText !== _document?.title}
 							onclick={deleteDocument}
 						>
 							<Trash color="red" />
 						</button>
 					</div>
-					<p class={`${deletionConfirmText === title ? 'invisible' : ''} opacity-70`}>
-						{m.document_confirm_fail({ title: title || '' })}
+					<p class={`${deletionConfirmText === _document?.title ? 'invisible' : ''} opacity-70`}>
+						{m.document_confirm_fail({ title: _document?.title || '' })}
 					</p>
 				</article>
 			{/snippet}
