@@ -128,7 +128,12 @@ export async function read(address: FileAddress, type?: FileType): Promise<File 
 		if (res.ok !== 1) {
 			throw new Error('Failed to read file');
 		}
-		return res.data;
+		const data = res.data as File;
+		return {
+			...data,
+			updated: new Date(data.updated),
+			created: new Date(data.created)
+		};
 	});
 }
 
