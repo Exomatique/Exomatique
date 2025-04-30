@@ -52,5 +52,7 @@
 	"auto_saved_description": "La sauvegarde automatique a été effectuée avec succès",
 	"save_fail_description": "La sauvegarde a échoué",
 	"your_documents": "Vos documents",
-	"numbering": "Numérotation :"
+	"numbering": "Numérotation :",
+	"register_document_licence": "Vous publierez vos documents sous licence CC-BY-NC.",
+	"register_research": "Vous acceptez que vos données d'utilisation anonymisée puissent-être utilisés à des fins de recherche publique."
 }

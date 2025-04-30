@@ -13,6 +13,7 @@ export const POST: RequestHandler = async (event) => {
 	const username = formData.username;
 	const password = formData.password;
 	const rememberme = formData.rememberme;
+	const research = formData.research;
 
 	if (!validateUsername(username)) {
 		error(400, {
@@ -39,7 +40,9 @@ export const POST: RequestHandler = async (event) => {
 	});
 
 	try {
-		await prisma.user.create({ data: { id: userId, name: username, passwordHash } });
+		await prisma.user.create({
+			data: { id: userId, name: username, research: research, passwordHash }
+		});
 
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, userId, rememberme);

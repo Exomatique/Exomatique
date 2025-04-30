@@ -52,5 +52,7 @@
 	"auto_saved_description": "Auto Saving was done successfully",
 	"save_fail_description": "Saving failed",
 	"your_documents": "Your documents",
-	"numbering": "Numbering :"
+	"numbering": "Numbering :",
+	"register_document_licence": "You'll publish your documents under the CC-BY-NC licence.",
+	"register_research": "You agree for your anonymised data to be used for public research purpose."
 }
